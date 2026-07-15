@@ -39,6 +39,39 @@ Core criteria: **needs to process accumulated history + wants to leverage cache 
 
 Compression is a special case: after the tail prompt triggers tool calls, previous history is directly discarded (replaced by checkpoint). Other scenarios preserve history.
 
+**Compression = in-place replacement, not side branch**: Normal tail prompts are side branches (append temporary instructions, history unchanged). Compression is different — you can't modify the external Agent loop, so you can only do in-place replacement within the prompt: after the LLM executes tool calls, old history is replaced by checkpoint and directly discarded. Prerequisite: compression doesn't need branching (not even the side branch from before), only needs to complete replacement within the same turn.
+
+## Compression Example
+
+Suppose the conversation has accumulated 150 messages, and the user asks "Why is Fluxora's component set closed?"
+
+```
+KV cache (unchanged):
+  [ckpt_0] + [msg_101..msg_150]
+
+Newly appended (only uncached part):
+  Tail prompt: "Answer the user's question first, then analyze the conversation above,
+                call memory_store to extract preferences/facts, mark checkpoint."
+  User message: "Why is Fluxora's component set closed?"
+
+Agent completes three things in one turn (note the order):
+  1. "Fluxora's component set is closed because..."  ← Answer user first
+  2. tool_call: memory_store(...)                    ← Then memory operations
+  3. tool_call: memory_checkpoint(...)               ← Finally mark checkpoint
+```
+
+After the turn ends, session stores clean history:
+
+```
+Session stores:
+  [checkpoint_1] + ["Why is Fluxora's component set closed?"] + ["Fluxora's component set is closed because..."]
+
+Not:
+  [checkpoint_1] + [tail prompt + "Why is Fluxora's component set closed?"] + ["Fluxora's component set is closed because..."]
+```
+
+Tail prompt is discarded, no residue.
+
 ## Comparison with Traditional Approaches
 
 | Dimension | Traditional Compression | Tail Prompt |
@@ -52,3 +85,4 @@ Compression is a special case: after the tail prompt triggers tool calls, previo
 
 - [agent-memory.md](agent-memory.md) — Tail prompt application in Prefix Checkpoint
 - [graph-memory.md](graph-memory.md) — Extraction prompt in graph memory
+- [LLM Caching Destruction Patterns](llm-caching-destruction-patterns.md) — Cache branching patterns (threads) vs destruction patterns
