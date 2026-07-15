@@ -335,9 +335,15 @@ Turn N+2:  新 checkpoint + 新增量，重新开始
 优势：LLM 注意力完全集中在压缩任务上（不需要同时回答用户），提取质量可能更高。
 问题：(1) 需要改 Agent loop（识别特殊输出并处理）；(2) 压缩和回答分开，两次 LLM 调用；(3) 压缩时机不在记忆系统控制下。
 
-#### Prefix Checkpoint（当前方案）
+#### 原位检查点压缩（Prefix Checkpoint，当前方案）
 
-替代上述两种方案。核心思路：压缩不是单独的 LLM 调用，而是融入 Agent 的正常对话 turn——下一个用户提问时，在 prompt 末尾追加压缩提示词（不是 system prompt），Agent 一次 turn 同时完成提取和回答：
+替代上述两种方案。核心思路：压缩不是单独的 LLM 调用，而是融入 Agent 的正常对话 turn——下一个用户提问时，在 prompt 末尾追加压缩提示词（不是 system prompt），Agent 一次 turn 同时完成提取和回答。
+
+**四步闭环**：
+1. **拦截与触发**：记忆系统监控 token 长度，达到阈值时修改用户消息注入压缩指令，前文 token 绝对不变，100% 命中 KV Cache
+2. **原位函数调用**：主模型在完整上下文基础上，按顺序执行 generate_summary() + create_checkpoint()
+3. **正常回复用户**：完成元任务后，继续基于压缩后上下文回答用户原始问题
+4. **历史净化**：turn 结束后还原用户消息为原始内容，保证历史可重放、无伪指令
 
 ```
 Turn 1..N: 正常对话，[checkpoint] + 增量逐条追加到 prompt，KV cache 持续命中
