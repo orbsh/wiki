@@ -19,6 +19,7 @@
 | [Hermes Agent 设计](hermes-agent-design.md) | | Hermes 特定的使用约定、配置细节和运维协议 |
 | [AI Agent 选型](ai-agent-selection.md) | | 轻量 CLI Agent 选型调研（jcode → Hermes 之间） |
 | [多智能体批判](multi-agent-critique.md) | | 多 Agent 模式的技术批判 |
+| [辩论验证](debate-validation.md) | | Prefix Checkpoint 方案的辩论验证过程：帕累托最优论证、层次隔离、揭穿 AI 幻觉 |
 | [用户画像：Orbit](orbit-profile.md) | | Orbit（O）的偏好、习惯、技术立场 |
 
 ## LLM 与认知
