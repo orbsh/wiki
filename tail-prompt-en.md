@@ -22,11 +22,20 @@ Analogy to TCO (Tail Call Optimization): tail calls reuse the current stack fram
 
 ## Use Cases
 
-| Scenario | Tail Prompt Content | Result |
-|:--|:--|:--|
-| **Compression** | "Analyze the conversation above, extract memories, mark checkpoint" | Old history replaced by checkpoint, directly discarded |
-| **Summarization** | "Summarize the key points of the discussion above" | Generate summary, inject into subsequent context |
-| **Extraction** | "Extract user preferences from the conversation" | Structured knowledge written to storage |
+Core criteria: **needs to process accumulated history + wants to leverage cache + can complete in the same turn**.
+
+| Scenario | Trigger | Tail Prompt Content | Result |
+|:--|:--|:--|:--|
+| **Compression** | Messages reach threshold (e.g., 100) | "Analyze the conversation above, extract memories, mark checkpoint" | Old history replaced by checkpoint, directly discarded |
+| **Cache renewal** | Session idle + cache about to expire | "Refresh checkpoint" | Checkpoint updated, cache refreshed |
+| **Topic boundary detection** | Every N turns | "Detect if the conversation has switched topics" | If switched, trigger checkpoint |
+| **Preference learning** | Periodic (e.g., every 20 turns) | "Extract user preferences and update" | `memories` table updated |
+| **Summarization** | After discussion ends | "Summarize the key points of the discussion above" | Generate summary, inject into subsequent context |
+| **Extraction** | Anytime | "Extract user preferences from the conversation" | Structured knowledge written to storage |
+| **Compliance check** | Before critical operations | "Check if the conversation above complies with policies" | Audit log, no history modification |
+| **Meeting minutes** | After meeting ends | "Generate structured meeting minutes" | Markdown output, written to document |
+| **Code review** | After code discussion | "Review the code approach discussed above" | Review comments, written to issue |
+| **Auto-tagging** | Session ends | "Generate tags for this conversation" | Tags written to session metadata |
 
 Compression is a special case: after the tail prompt triggers tool calls, previous history is directly discarded (replaced by checkpoint). Other scenarios preserve history.
 
