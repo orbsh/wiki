@@ -39,6 +39,39 @@ KV cache（不变）：[历史对话]
 
 压缩场景是特殊情况：尾提示词触发的工具调用完成后，前面的历史直接丢弃（被 checkpoint 替换）。其他场景保留历史。
 
+**压缩场景 = 原地替换，不是旁路分支**：一般尾提示词是旁路分支（追加临时指令，历史不变）。压缩场景不同——不能改外部 Agent 循环，只能在 prompt 内部原地替换：LLM 执行工具调用后，旧历史被 checkpoint 替换，直接丢弃。前提：压缩场景不需要分支（连之前的旁路分支都不需要），只需要在同一次 turn 内完成替换。
+
+## 压缩场景完整示例
+
+假设对话已经积累了 150 条消息，用户问"Fluxora 的组件集为什么是封闭的"。
+
+```
+KV cache 中（不变）：
+  [ckpt_0] + [msg_101..msg_150]
+
+新追加的消息（唯一未缓存的部分）：
+  尾提示词："先回答用户的问题，然后分析以上对话，调用 memory_store
+            提取偏好/事实，标记 checkpoint。"
+  用户消息："Fluxora 的组件集为什么是封闭的"
+
+Agent 一次 turn 完成三件事（注意顺序）：
+  1. "Fluxora 组件集封闭是因为..."          ← 先回答用户问题
+  2. tool_call: memory_store(...)          ← 再做记忆操作
+  3. tool_call: memory_checkpoint(...)     ← 最后标记 checkpoint
+```
+
+turn 结束后，session 中存储的是纯净历史：
+
+```
+session 中存储的：
+  [checkpoint_1] + ["Fluxora 的组件集为什么是封闭的"] + ["Fluxora 组件集封闭是因为..."]
+
+而不是：
+  [checkpoint_1] + [尾提示词 + "Fluxora 的组件集为什么是封闭的"] + ["Fluxora 组件集封闭是因为..."]
+```
+
+尾提示词已丢弃，不残留。
+
 ## 与传统方案的对比
 
 | 维度 | 传统压缩 | 尾提示词 |
@@ -52,3 +85,4 @@ KV cache（不变）：[历史对话]
 
 - [agent-memory.md](agent-memory.md) — Prefix Checkpoint 中的尾提示词应用
 - [graph-memory.md](graph-memory.md) — 图谱化记忆中的提取 prompt
+- [LLM 缓存破坏模式](llm-caching-destruction-patterns.md) — 缓存分支模式（thread）与破坏模式对比

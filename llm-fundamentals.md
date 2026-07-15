@@ -67,6 +67,50 @@ seed → f(seed) → next_value → f(next_value) → ...
 
 MiMo 的窄思维链就是这个模式：最少的中间种子 → 最精准的偏置 → 直接输出。种子的质量决定输出质量，种子的长度只是噪音。
 
+### 1.6 KV Cache 的树形结构
+
+KV cache 不是线性链，是**树**。每个对话分支从父节点继承前缀缓存，独立续写。
+
+```
+[system + 历史对话]
+         │
+    ┌────┴────┐
+    ▼         ▼
+[thread_A]  [thread_B]    ← 共享父节点的 KV cache
+    │
+    ▼
+[thread_A_2]              ← 独立续写，不共享 thread_B 的 cache
+```
+
+**三种分支模式**：
+
+| 模式 | 分叉点 | 生命周期 | 缓存复用 |
+|:--|:--|:--|:--|
+| **Thread** | 任意历史消息（用户选择） | 跨 turn，持久 | 父消息 cache + 各 thread 独立 |
+| **尾提示词** | prompt 末尾（系统注入） | 一次 turn，丢弃 | 前缀 cache + 尾部新计算 |
+| **模型切换** | 无分叉，物理隔离 | 不适用 | 100% 失效 |
+
+Thread 是用户驱动的持久分支，尾提示词是系统驱动的临时分支。两者都利用前缀缓存，区别在生命周期和控制方。
+
+> **实践扩展**：以下基于 KV cache 树形结构的使用技巧。
+
+**主动开 thread**：在支持 thread 的 IM 中，为不同话题开 thread。每个 thread 的前缀缓存独立复用，避免主线程前缀被不同话题的交替污染。Hermes 支持 thread 的平台：**Feishu**（群聊话题）、**Discord**（threads）、**Telegram**（groups topics）。WhatsApp、Signal 无 thread 支持，无法利用此机制。
+
+**分支的缓存回收**：thread_A 走了很远后回到 thread_B，common prefix（分叉点之前的部分）的缓存仍然可用——前提是还在 TTL 窗口内（通常 5-30 分钟）。如果 thread_A 耗时过长或服务器显存压力大，common prefix 可能被 LRU 淘汰，回到 thread_B 时需要重新计算。实际操作中，5-10 分钟内切换分支，缓存基本都在。
+
+**背景知识填充模式**：利用这个特性，可以先让 LLM 通读项目代码/文档，把背景知识加载到 KV cache 中，然后在这个基础上开 thread 做具体任务。每个 thread 继承已缓存的项目上下文，只需计算自己的任务 token。
+
+```
+主线程："通读这个代码库" → LLM 读代码，生成大量 token → 缓存建立
+  ├── thread_A："修这个 bug" → 继承项目上下文 + bug 描述
+  ├── thread_B："加个功能" → 继承项目上下文 + 需求描述
+  └── thread_C："写测试" → 继承项目上下文 + 测试范围
+```
+
+每个 thread 的成本 ≈ 任务描述的 token（项目上下文走 cache）。适合需要反复操作同一项目的场景。
+
+→ 破坏缓存的因素见 [LLM 缓存破坏模式](llm-caching-destruction-patterns.md)
+
 ---
 
 ## 二、LLM 不是什么
