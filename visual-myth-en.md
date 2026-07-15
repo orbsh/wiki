@@ -1,4 +1,4 @@
-# The Visual Myth
+# The Myth of Visualization
 
 **Thesis**: Visualization is not a solution to complexity — it is complexity in disguise.
 **Scope**: A structural critique of no-code/low-code paradigms.
@@ -151,5 +151,6 @@ The structural defects of visual forms (inefficiency, inflexibility, poor compos
 
 ## Cross References
 
-- **[Dify Critique](dify-critique.md)**: Dify is a textbook case of the visual myth — replacing text-based programming with drag-and-drop orchestration, using visualization to mask paradigmatic contradictions.
-- **[Harbor Critique](harbor-critique.md)**: Harbor's web UI is another product of the visual myth — wrapping simple API operations in a graphical interface.
+- **[Dify Critique](dify-critique.md)**: Dify is a textbook case of the myth of visualization — replacing text-based programming with drag-and-drop orchestration, using visualization to mask paradigmatic contradictions.
+- **[Harbor Critique](harbor-critique.md)**: Harbor's web UI is another product of the myth of visualization — wrapping simple API operations in a graphical interface.
+- **[Nushell Introduction](nushell-introduction.md)**: Nushell demonstrates the structural advantages of text-based forms in the AI era.
