@@ -132,6 +132,9 @@ After seeing this instruction, the AI automatically calls memory tools to comple
 |:--|:--|:--|:--|
 | **Active Trigger** | Agent calls memory_store when it judges "this is worth remembering" | Precise, only stores valuable | Depends on Agent judgment, may miss |
 | **Threshold Trigger** | LLM batch extraction when messages accumulate to N | Low-frequency calls, LLM cost controllable | Not compressed within N messages (but raw messages still in session, Agent can read directly) |
+| **Nightly Scheduled** | Background compression during user inactivity (e.g., late night) | No impact on user experience, uses idle compute | Requires scheduled task infrastructure |
+| **Long Idle** | Triggered when session idle for long time, can combine with cache expiration for renewal | Prevents cache expiry, maintains hot cache | Requires session activity monitoring |
+| **Topic Change** | Triggered when conversation topic shifts | Compresses at semantic boundaries, clearer summaries | Requires topic detection capability (graph memory) |
 
 ### Active Trigger
 
@@ -144,12 +147,23 @@ Trigger method is **user request or implication**:
 
 The Agent doesn't proactively capture knowledge generated during execution — it uses LLM judgment to filter, only storing valuable information, precise but dependent on judgment.
 
-These are the memory system's two complementary trigger methods:
+### Other Trigger Mechanisms
+
+**Nightly Scheduled Trigger**: During user inactivity (e.g., late night), background scheduled tasks trigger compression. Uses idle compute to complete compression without impacting daytime user experience. Suitable for scenarios where compression cost is high (long conversations, large models).
+
+**Long Idle Trigger (Stream Processing)**: Triggered when session has been idle for a long time. Can be combined with cache expiration — proactively renew before cache expires. Essentially **stream processing**: continuously maintaining hot cache, preventing cache invalidation that would cause full recomputation on next conversation. Paired with Prefix Checkpoint: after compression, new checkpoint serves as prefix, cache hits again.
+
+**Topic Change Trigger**: Triggered when conversation topic shift is detected. Compresses at semantic boundaries, resulting in clearer summaries ("first half discussed architecture, second half discussed deployment" is more useful than "mixed summary of 100 messages"). Requires topic detection capability, works with graph memory — cluster boundaries in the graph are natural topic boundaries.
+
+These are the memory system's five complementary trigger methods:
 
 | Method | Timing | Who Decides | What to Store |
 |:--|:--|:--|:--|
 | **Prefix Checkpoint** | When threshold reached | Memory system | Conversation summary + extracted preferences/facts |
 | **Active Trigger** | During conversation | Agent | What the Agent judges worth remembering |
+| **Nightly Scheduled** | User inactivity | Scheduled task | Same as Prefix Checkpoint |
+| **Long Idle** | Session idle + cache near expiry | Stream processing | Renewed checkpoint |
+| **Topic Change** | Semantic boundary | Graph clusters | Topic-segmented summaries |
 
 ### Injection Method
 
