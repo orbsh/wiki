@@ -61,7 +61,79 @@ MCP 有一个文档必须承认的正面价值：**标准化**。一个 MCP serv
 
 ---
 
-## 四、MCP vs CLI + Skill 对比
+## 四、第一性原理：如果 Skill 先出现
+
+剥离所有现有生态——没有 MCP，没有 Skill，没有工具协议。从零开始设计 Agent 基础设施。
+
+**你会先设计什么？**
+
+选项 A：通信协议（如何连接外部工具）
+选项 B：能力模型（Agent 会什么、能组合什么）
+
+答案显然是 B。你需要先定义"能力是什么"，才能决定"如何暴露能力"。通信协议是能力模型的**下游产物**——有了需要通信的内容，协议自然产生。
+
+MCP 的问题是**倒置了这个顺序**：它先定义了通信方式（JSON-RPC、常驻进程、Schema），再让工具去适配这个协议。这导致：
+- 工具被迫包装成 MCP Server（即使它只是一个 CLI 脚本）
+- 能力描述被协议的 Schema 格式绑架（JSON-Schema 不是能力描述的最优形式）
+- 执行模型被常驻进程锁定（即使工具只需要执行一次）
+
+如果 Skill 先出现，MCP 没有位置。因为：
+- Skill 已经定义了能力（`skill.md` + Schema + 执行器）
+- Skill 已经规定了发现方式（`--schema` 按需加载）
+- Skill 已经解决了执行（spawn / WASM Sandbox）
+- 剩下的"跨客户端通信"是**可选的协议适配**，不是核心架构
+
+### Skill 如何处理规模
+
+"10000 Skills 加载不了"——这个质疑假设了和 MCP 一样的全量加载模式。Skill 的架构天然支持规模管理：
+
+- **搜索**：Embedding-based 语义检索，Agent 描述意图，返回 Top-K 相关 Skill
+- **树形组织**：Skill 可组合——`release-management` = `git` + `docker` + `kubernetes` + `slack`，层级化而非平铺
+- **按需加载**：只激活当前任务需要的 Skill，其余不占上下文
+
+MCP 做不到这些。MCP 的 `tools/list` 返回的是**平铺的 Schema 列表**——没有层级、没有组合、没有语义检索。规模越大，MCP 的全量加载越不可行，而 Skill 的搜索 + 组合 + 树形结构越有价值。
+
+[graph-memory](graph-memory.md) 中的**涌现式 Skill** 进一步说明了这一点：工具使用数据自然聚类为 Skill 边界，Skill 不是人工划定的，是使用数据涌现的。当 Skill 从人工定义演进为自动聚类，规模管理不是"能不能加载"的问题，而是"如何高效检索和组合"的问题——这是 Skill 架构的原生能力，MCP 没有。
+
+---
+
+## 五、Serverless 与 Runtime 演进
+
+MCP 的执行模型是常驻 Server：Agent → MCP Server（常驻进程） → Tool。
+
+这与 Serverless 的理念矛盾。Serverless 的核心是**按需执行、用完即退**——正是 CLI + Skill 天然具备的特性：spawn 子进程，执行，退出。MCP 把这个已经正确的模式倒退为常驻服务。
+
+**执行模型演进**：
+
+```
+当前 MCP                    Serverless（理想形态）
+Agent                       Agent
+  ↓                           ↓
+MCP Server（常驻）           Skill Runtime
+  ↓                           ↓
+Tool                        Sandbox（WASM / Container / Process）
+  ↓                           ↓
+（保持运行）                  执行 → 退出
+```
+
+WASM 是这个路径的理想形态：
+- **沙箱隔离**：每个 Skill 执行环境独立，权限可控
+- **亚毫秒冷启动**：比进程 spawn 更快
+- **跨语言**：Python / Rust / Go 编译到 WASM，统一 Runtime
+- **可移植**：同一 `.wasm` 在本地、云端、边缘都能执行
+
+未来 Skill 的分发形态：
+```
+skill.yaml          ← 元数据 + 权限声明
+skill.wasm          ← 执行体
+metadata.json       ← Schema + 版本 + 依赖
+```
+
+这不是理论推演——CLI + Skill 的 spawn 模式已经是 Serverless 的本地等价物。WASM Runtime 只是把这个模式从"本地进程"扩展到"跨环境沙箱"。
+
+---
+
+## 六、MCP vs CLI + Skill 对比
 
 | 维度 | MCP | CLI + Skill |
 |:---|:---|:---|
@@ -74,11 +146,12 @@ MCP 有一个文档必须承认的正面价值：**标准化**。一个 MCP serv
 | **依赖** | 主流实现依赖 Node.js + 端口 | 零依赖（单二进制 / Python 脚本） |
 | **可迁移性** | 协议绑定，跨客户端需适配 | 直接复制目录 |
 | **主权** | 协议绑定，工具在服务端 | 本地文件，工具主权在开发者 |
+| **规模管理** | 平铺列表，全量加载 | 搜索 + 树形 + 组合，按需加载 |
 | **生态兼容** | ✅ 跨客户端标准 | ❌ 每框架自行实现 |
 
 ---
 
-## 五、Skill 实现语言选型
+## 七、Skill 实现语言选型
 
 Skill 的实现语言选择不是技术审美问题，是**自主进化场景的摩擦问题**——AI 需要读、写、改 Skill 代码，语言的选择直接影响摩擦大小。
 
@@ -96,7 +169,7 @@ Skill 的实现语言选择不是技术审美问题，是**自主进化场景的
 
 ---
 
-## 六、安全设计
+## 八、安全设计
 
 ### 框架层安全：框架拼命令
 
@@ -108,7 +181,7 @@ Skill 启动后，用的是 Skill 自身所用语言的全部能力——Python 
 
 ---
 
-## 七、选型落脚点
+## 九、选型落脚点
 
 **必须在商业 IDE 里工作**（Cursor / Windsurf）：不得不吃 MCP，因为这些 IDE 不开放 Shell 权限。此时跨客户端共享记忆的最成熟生态是 [agentmemory](https://github.com/rohitg00/agentmemory)（24k★，TypeScript，通过 MCP 协议适配商业 IDE）。这是政治性妥协——接受 MCP 的开销换取生态兼容。
 
@@ -122,3 +195,4 @@ Skill 启动后，用的是 Skill 自身所用语言的全部能力——Python 
 - **[Agent 复利](agent-compound-interest.md)**：工具主权在本地 = 复利归用户；协议绑定 = 平台锁定。Skill 直接复制目录 = 零迁移成本 = 复利不断裂。
 - **[agentmemory](agent-memory.md)**：记忆层走 MCP 的妥协方案，低频操作开销可接受。
 - **[Karpathy 的 AI 编程方法论](karpathy-ai-coding-methodology.md)**：SYSTEM.md / TODO.md 是 Skill 的雏形，文档驱动是对抗 LLM 无状态性的工程适配。
+- **[graph-memory](graph-memory.md)**：涌现式 Skill——工具使用数据自然聚类为 Skill 边界，规模管理靠搜索和组合，不是全量加载。
