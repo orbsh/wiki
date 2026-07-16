@@ -2,6 +2,9 @@
 
 **Conclusion**: Organize system intelligence as a pyramid — the base absorbs massive data, the apex handles elite decisions only. Each layer is an offloading target for the layer above; each layer filters out what the layer above doesn't need.
 **Analogy**: Computer memory hierarchy (Cache → RAM → SSD → HDD) maps to AI engineering's intelligence gradient.
+**Dual Role**: The pyramid is both a **runtime architecture** (data filters upward layer by layer) and a **development methodology** (L1 designs solutions → compiles into lower-layer artifacts → runtime feedback flows back to L1, forming an iteration flywheel).
+
+> **Layering ≠ Pyramid**: Layering is a general architectural pattern (separation of concerns). A pyramid specifically refers to a layered model with **progressive offloading/filtering** — each layer absorbs most of the data and passes only elite information upward. A layered structure without filtering (e.g., the classic 3-tier UI→BLL→DAL) is not a pyramid.
 
 ---
 
@@ -132,7 +135,48 @@ Online (L3): Piecewise functions + penalty factors
 
 ---
 
-## 3. Determinism Gradient
+## 3. Iteration Flywheel
+
+Upward offloading describes runtime data filtering. But the pyramid is also a **development methodology** — intelligence flows downward (design → compiled artifacts), and runtime feedback flows upward, driving continuous improvement.
+
+### Flow 1: Downward Compilation (Design → Execution)
+
+```
+L1 AI analyzes scenario + formulates plan
+  ↓ Compile
+AI writes code, integrating required intelligence
+  ↓ Priority: deterministic algorithms > ML > AI
+L4/L3/L2 carry the runtime
+```
+
+Core principle: **always prefer lower-cost, higher-efficiency paradigms**. Use deterministic algorithms over ML, use ML over AI — the practical difference is often small, but the cost difference is orders of magnitude.
+
+### Flow 2: Upward Feedback (Runtime → Optimization)
+
+```
+L4/L3/L2 produce runtime data
+  ↓ Sampling / anomaly detection / performance metrics
+L1 analyzes runtime performance, identifies bottlenecks
+  ↓ Adjust strategy
+Recompile into lower-layer artifacts
+```
+
+**Feedback types**:
+
+| Source | Trigger | L1 Action |
+|:---|:---|:---|
+| L4 data quality | Abnormal discard rate, missing fields | Adjust cleaning rules |
+| L3 filter precision | Rising false positives / false negatives | Correct thresholds or formula parameters |
+| L2 model drift | Declining prediction accuracy | Retrain or adjust features |
+| L1 strategy deviation | Business metrics diverge from targets | Redesign approach |
+
+### Flywheel Effect
+
+With each iteration, L1's accumulated domain knowledge is solidified into lower layers (new rules, new models, new feature pipelines). The system becomes more deterministic over time — L1 intervention frequency decreases as more decisions are compiled into L4/L3/L2 deterministic execution.
+
+---
+
+## 4. Determinism Gradient
 
 From base to apex, determinism decreases progressively:
 
@@ -147,7 +191,7 @@ In B2B commerce and financial audit scenarios, determinism is a hard requirement
 
 ---
 
-## 4. Cold Start & Multilingual
+## 5. Cold Start & Multilingual
 
 ### Cold Start: L4/L3 Rule Fallback
 
@@ -174,7 +218,7 @@ Local vectorization + cosine similarity. No API calls, no Token consumption, mil
 
 ---
 
-## 5. System Capacity
+## 6. System Capacity
 
 The pyramid's shape determines capacity characteristics: base expands infinitely, apex cost stays fixed.
 
@@ -189,7 +233,7 @@ L1 Token cost is **decoupled** from data volume — 95% of data is consumed at l
 
 ---
 
-## 6. Relationship to Agent Architecture
+## 7. Relationship to Agent Architecture
 
 ```
 Agent Architecture        Intelligence Pyramid
@@ -203,7 +247,7 @@ Agent's Planner and Executor are runtime-decoupled but coexist in one session. I
 
 ---
 
-## 7. Strategic Positioning
+## 8. Strategic Positioning
 
 ```
 Sell data       →  Low barrier, replicable
