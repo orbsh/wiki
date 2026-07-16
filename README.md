@@ -57,7 +57,7 @@
 | [Nginx 批判](nginx-critique.md) | | 为何 Nginx 过时：多进程低效、静态配置、Lua 复杂性 |
 | [MySQL 批判](mysql-critique.md) | | MySQL 的架构缺陷 |
 | [等保标准批判](mlps-critique.md) | | 等保标准与现代安全实践的差异：云环境适配、密码轮换、防火墙、审计 |
-| [MCP 批判](mcp-critique.md) | | MCP 协议的政治性妥协与工程代价 |
+| [MCP 批判](mcp-critique.md) | [MCP Over-Engineering](mcp-critique-en.md) | MCP 协议的政治性妥协与工程代价 |
 | [Dify 批判](dify-critique.md) | | AI 应用领域的 Harbor 复制品：低代码 vs AI 范式矛盾 |
 | [Harbor 批判](harbor-critique.md) | | 企业膨胀、CNCF 政治 vs 工程现实 |
 | [阿里云批判](aliyun-critique.md) | | 阿里云的架构与商业问题 |
