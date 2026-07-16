@@ -21,6 +21,7 @@
 | [多智能体批判](multi-agent-critique.md) | | 多 Agent 模式的技术批判 |
 | [辩论验证](debate-validation.md) | | Prefix Checkpoint 方案的辩论验证过程：帕累托最优论证、层次隔离、揭穿 AI 幻觉 |
 | [用户画像：Orbit](orbit-profile.md) | | Orbit（O）的偏好、习惯、技术立场 |
+| [智力金字塔模型](intelligence-pyramid.md) | [Intelligence Pyramid](intelligence-pyramid-en.md) | 多级智力架构与卸载策略：LLM→ML→算法→代码的梯度平衡 |
 
 ## LLM 与认知
 
