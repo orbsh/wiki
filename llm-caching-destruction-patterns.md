@@ -145,7 +145,7 @@ KV cache（不变）：[历史对话]
 
  Prefix Checkpoint 是尾提示词的特例——不是分支，是**原地替换**。不能改外部 Agent 循环，只能在 prompt 内部完成：LLM 执行工具调用后，旧历史被 checkpoint 替换，直接丢弃。不需要分支（连旁路分支都不需要），只需要同一次 turn 内完成替换。
 
-→ 尾提示词的完整机制见 [尾提示词](tail-prompt.md)
+→ 尾提示词的完整机制见 [缓存树和尾提示词优化](tail-prompt-optimization.md)
 
 ---
 
@@ -187,6 +187,6 @@ KV cache（不变）：[历史对话]
 | 文档 | 关联论点 |
 |------|---------|
 | [LLM 基础认知与心智模型](llm-fundamentals.md) | 概率预测器 / 视野×速度 / 高维关键词匹配 / KV cache 树形结构 |
-| [尾提示词](tail-prompt.md) | 缓存分支机制、压缩场景原地替换 |
+| [缓存树和尾提示词优化](tail-prompt-optimization.md) | 缓存分支机制、压缩场景原地替换 |
 | [AI 编程批判](ai-programming-optimism-critique.md) | AI 编程的三重知识困境 |
 | [编程语言选型](language-selection.md) | Python 作为 AI 生成最优语言 |

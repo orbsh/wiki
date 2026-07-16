@@ -30,7 +30,7 @@
 | [LLM 过度思考批判](llm-overthinking-critique.md) | | 表演拟人 vs 真正推理、草稿本纠偏 |
 | [LLM 缓存破坏模式](llm-caching-destruction-patterns.md) | | Prompt Caching 生效条件、前缀稳定性、IDE/Agent 场景的缓存杀手 |
 | [LLM 隐藏行为模式](llm-hidden-behavior-patterns.md) | | 模型未显式表达但影响输出的行为模式 |
-| [尾提示词](tail-prompt.md) | [Tail Prompt](tail-prompt-en.md) | KV cache 旁路分支机制，用于压缩/汇总/提取 |
+| [缓存树和尾提示词优化](tail-prompt-optimization.md) | [Tail Prompt Optimization](tail-prompt-optimization-en.md) | KV cache 旁路分支机制，用于压缩/汇总/提取 |
 | [认知心理学](cognitive-psychology.md) | | 认知科学框架在 AI Agent 设计中的应用 |
 
 ## 架构与基础设施

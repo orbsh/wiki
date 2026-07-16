@@ -1,12 +1,22 @@
-# 尾提示词
+# 缓存树和尾提示词优化
 
 *注入 prompt 末尾的一段指令，利用 KV cache 的旁路分支机制完成特定任务。*
 
 ## 定义
 
+**缓存树（Cache Tree）**：多个 turn 共享同一段 KV cache 前缀，形成树状结构：
+
 ```
-KV cache（不变）：[历史对话]
-旁路分支（新计算）：[尾提示词 + 用户问题]
+                    [system prompt + 历史对话]          ← trunk（共享 cache）
+                   /                                  \
+    [branch A: 尾提示词A + 问题]    [branch B: 尾提示词B + 问题]   ← branches（新计算）
+```
+
+尾提示词利用树的分支特性：共享 trunk（历史 cache），只计算新 branch（尾提示词）。
+
+```
+KV cache（不变）：[历史对话]                          ← trunk
+旁路分支（新计算）：[尾提示词 + 用户问题]              ← branch
   → LLM 一次 turn 同时完成：回答用户 + 执行尾提示词指定的任务
   → turn 结束后，尾提示词丢弃，只保留结果
 ```

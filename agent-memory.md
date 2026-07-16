@@ -8,7 +8,7 @@
 
 ### 尾提示词
 
-详见 [尾提示词](tail-prompt.md)。核心：注入 prompt 末尾的临时指令，利用 KV cache 旁路分支，turn 结束后丢弃。压缩场景中触发工具调用后旧历史直接丢弃。
+详见 [缓存树和尾提示词优化](tail-prompt-optimization.md)。核心：注入 prompt 末尾的临时指令，利用 KV cache 旁路分支，turn 结束后丢弃。压缩场景中触发工具调用后旧历史直接丢弃。
 
 ## 一、两层架构
 
