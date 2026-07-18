@@ -46,7 +46,7 @@
 | [Fjall Openraft ADR](fjall-openraft-adr.md) | | 嵌入式 KV + Raft 共识替代 Redis |
 | [Fjall 多模态索引](fjall-multimodal-indexing.md) | | Fjall 的多模态索引设计 |
 | [Arrow HTAP 引擎](arrow-unified-htap-engine.md) | | Arrow 统一 HTAP 引擎设计 |
-| [存储方案](storage-solution.md) | | 存储架构选型 |
+| [文件系统方案](filesystem-solution.md) | | 文件系统选型 |
 | [拥塞控制设计](congestion-control-design.md) | | 网络拥塞控制 |
 | [轻量 FaaS 架构](lightweight-faas-architecture.md) | | 轻量级函数即服务架构 |
 
