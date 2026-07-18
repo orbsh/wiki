@@ -299,3 +299,4 @@ jcode client --connect 127.0.0.1:8080 --model qwen/glm-5.2
 - **[LLM 基础认知](llm-fundamentals.md)**：Agent 的记忆和自主进化受限于 LLM 的元认知缺失——无法自我校验输出质量，需要 Maker/Checker 分离。
 - **[Karpathy 的 AI 编程方法论](karpathy-ai-coding-methodology.md)**：文档驱动（SYSTEM.md / TODO.md）是对抗 LLM 无状态性的工程适配。
 - **[循环工程分析](loop-engineering-analysis.md)**：Agent 的自动化（cron/loop）是复利的执行层，但验证天花板限制了适用范围。
+- **[终端 Agent 批判](terminal-agent-critique.md)**：TUI 视觉化、性能营销、工程壁垒夸大的系统性批判——本选型的哲学框架来源。
