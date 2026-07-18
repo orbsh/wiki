@@ -475,7 +475,7 @@ Redis 只支持 Key-Value 和基础集合（Set/List/Hash）。它**无法处理
 
 **PostgreSQL 内嵌高级语言**：Postgres 早就不是一个死板的存储盘，它是一个**全能的计算平台**。通过允许在数据库内部嵌入非受限的 Python 运行环境（`plpython3u`）、V8 引擎（`plv8`）或者原生的 PL/pgSQL，开发者可以直接在数据库内部执行极其复杂的业务逻辑、数据清洗、正则匹配甚至 AI 推理。**数据和代码在同一个内存空间里打交道，网络延迟和序列化开销直接降到了绝对的 0。**
 
-**SurrealDB 的革命性查询（SurrealQL）**：SurrealDB 原生融合了图数据库（Graph）、文档数据库（Document）和关系数据库（Relational）。它的高效查询语言支持直接通过 `->like->product` 这样的图语义，在单次声明式查询中直接横穿极其深层的嵌套关系。**你根本不需要分多次查询，也更不需要什么外部缓存。** → 详见 [SurrealDB: 统一数据层的架构哲学](./unified-data-layer.md)
+**SurrealDB 的革命性查询（SurQL）**：SurrealDB 原生融合了图数据库（Graph）、文档数据库（Document）和关系数据库（Relational）。它的高效查询语言支持直接通过 `->like->product` 这样的图语义，在单次声明式查询中直接横穿极其深层的嵌套关系。**你根本不需要分多次查询，也更不需要什么外部缓存。** → 详见 [SurrealDB: 统一数据层的架构哲学](./unified-data-layer.md)
 
 ### 2010 年代 NoSQL 狂热的集体退潮
 
