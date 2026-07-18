@@ -85,7 +85,7 @@
 | 文档 | English | 内容 |
 |:--|:--|:--|
 | [自动化 Skill 工作流](automation-skill-workflow.md) | | 浏览器操作→可复用 Hermes Skill 的逆向工程 |
-| [NL-to-SQL 技能架构](nl-to-sql-skill-architecture.md) | | 自然语言到 SQL 的技能设计 |
+| [NL2SQL 架构](nl2sql-architecture.md) | | OLTP 上做分析是架构设计错误：批判性分析 + 技能实现 |
 | [Nushell 介绍](nushell-introduction.md) | | Nushell 入门 |
 | [Loop 工程分析](loop-engineering-analysis.md) | | Loop 工程方法论框架 |
 
