@@ -52,34 +52,20 @@ OLAP 基础设施本身是数据业务的要求，不是 NL2SQL 的要求。NL2S
 
 **具体实现架构**（企业级技能）：
 
-```
-┌─────────────────────────────────────────────────┐
-│                   SKILL（无状态）                 │
-│                                                  │
-│  ┌──────────┐    ┌───────────┐    ┌───────────┐ │
-│  │   用户    │───►│   AI LLM  │───►│  SQL 生成  │ │
-│  │   查询    │    │ (NL→SQL)  │    │ (CTE 模式) │ │
-│  └──────────┘    └───────────┘    └─────┬─────┘ │
-│                                         │        │
-│  ┌──────────────────────────────────────▼──────┐│
-│  │           技能脚本 (run.py)                  ││
-│  │  1. CTE 包装：注入 user_id + org_path 过滤  ││
-│  │     WITH filtered_data AS (                 ││
-│  │       SELECT * FROM data                    ││
-│  │       WHERE user_id = ?                     ││
-│  │         AND org_path LIKE ?                 ││
-│  │     )                                       ││
-│  │     <LLM_SQL 替换表名为 filtered_data>      ││
-│  │  2. duckdb.sql(wrapped_sql)                 ││
-│  └──────────────────────┬──────────────────────┘│
-│                         │                        │
-└─────────────────────────┼────────────────────────┘
-                          │
-              ┌───────────▼───────────┐
-              │   Lakehouse (Iceberg) │
-              │  s3://bucket/org/42/  │
-              │    data/*.parquet     │
-              └───────────────────────┘
+```mermaid
+flowchart TB
+    U[用户查询] --> LLM[AI LLM<br>NL→SQL]
+    LLM --> SQL[SQL 生成<br>CTE 模式]
+    SQL --> SKILL[技能脚本 run.py]
+
+    subgraph SKILL
+        direction TB
+        CTE["1. CTE 包装<br>注入 user_id + org_path 过滤"]
+        EXEC["2. duckdb.sql(wrapped_sql)"]
+        CTE --> EXEC
+    end
+
+    SKILL --> LH["Lakehouse: Iceberg<br>s3://bucket/org/42/"]
 ```
 
 
