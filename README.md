@@ -97,6 +97,8 @@
 | [AI 时代商业模式](ai-era-business-models.md) | | AI 对商业模式的重塑 |
 | [AI 流动性](ai-liquidity-camp.md) | | AI 时代的流动性分析 |
 | [Karpathy AI 编码方法论](karpathy-ai-coding-methodology.md) | | Karpathy 的 AI 编码实践 |
+| [国内 AI 产业制度性缺陷](ai-industry-institutional-critique.md) | | 蒸馏/刷分现象、评审体制逆向选择、自由市场 vs 国家主导 |
+| [AI 辅助视频制作与游戏引擎](ai-creative-production-workflow.md) | | AI 视频 10 秒魔咒、UE6/Bevy 路线、AI+Blender 工作流 |
 
 ## 工具与环境
 
