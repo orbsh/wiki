@@ -226,6 +226,14 @@ Hermes Agent（编排层）
 }
 ```
 
+**JSON 组件树架构**：这套 JSON 中间格式的本质是将前端工程的组件树（Component Tree）思想复刻到三维影视管线——LLM 充当"前端编译器"，把剧本编译成结构化的 JSON 组件树，3D 引擎（Blender Scene Graph）充当"浏览器渲染引擎"将其解析为场景图。三个关键工程优势：
+
+- **Schema 围栏**：定义严格的 type（Character/Camera/Light/Prop）+ params，AI 被锁死在有限参数空间里，无法"自由发挥"产生拓扑错误。与直接让 AI 生成三维几何（高自由度、容易崩溃）相比，结构化 JSON 是可控的安全区
+- **children 嵌套 = 3D 父子级绑定**：JSON 的 children 嵌套映射到 3D 空间的 Parenting 关系。例如把"杯子"组件嵌套在"角色手掌"的 children 下 → 骨骼挂载（Socket Attachment）→ 动捕时杯子自动跟手走，不会出现 AI 视频中"杯子在空中漂移"的物理硬伤
+- **插拔式修改**：导演说"镜头太近"，只改 Camera 组件的 `fov: 50→35`，角色、动作、材质 100% 不变；传统 AI 暴力流 = 整段重来，沉没成本极高
+
+**容错前移**：渲染前可用 JSON Validator 做语法检查 + 物理边界检查（越轴检测、灯光强度超标），在数据层过滤错误，不等渲染完才发现穿帮。
+
 **Agent 编排逻辑**：
 
 1. **顺序依赖**：`script-breakdown` → `scene-builder` → `character-gen` → `motion-capture` → `camera-direct` → `lighting-setup` → `render-pipeline`（严格串行，后者依赖前者的输出）
