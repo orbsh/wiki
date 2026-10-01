@@ -177,6 +177,8 @@ Vector extraction is L3, fitting is L2 — the L3→L2 cascade is the pipeline's
 - Tree models (XGBoost/LightGBM, SVM): fast to fit, highly interpretable, microsecond inference, dependent on feature-engineering quality
 - Micro Transformers (DistilBERT, MacBERT-Tiny class, ≤100M parameters): attach a multi-task classification head, fine-tune for 3–5 epochs, stronger long-text semantic generalization, one forward pass emits several channels at once (item quality, time compliance, blocker authenticity)
 
+The inference-efficiency comparison between the two routes is a CPU-microarchitecture question (branch prediction vs vectorization); see [Lambda to Silicon](lambda-to-silicon-en.md) §"Tree Models vs Small Neural Networks": when total compute is comparable, prioritize the small neural network — the tree model's inference edge comes from categorical features needing no inflation, not from matrix arithmetic being inherently slow.
+
 **Asset export**. Both routes convert to ONNX and ship as a decoupled deployment package:
 
 - `model.onnx`: model weights, under 50MB
