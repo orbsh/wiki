@@ -75,6 +75,7 @@ The core layer of the pyramid, executing all online inference. Runs on local CPU
 | XGBoost / LightGBM | Regression and classification |
 | LogisticRegression | Probability prediction |
 | scikit-learn | Feature engineering pipeline |
+| DistilBERT / MacBERT-Tiny | Long-text semantic fine-tuning classification |
 
 **Input**: L3-filtered feature vector → **Output**: prediction (reply rate / inventory demand / customer score)
 
@@ -151,6 +152,53 @@ L4/L3/L2 carry the runtime
 
 Core principle: **always prefer lower-cost, higher-efficiency paradigms**. Use deterministic algorithms over ML, use ML over AI — the practical difference is often small, but the cost difference is orders of magnitude.
 
+#### Compilation Pipeline: L1 Distilled to L2
+
+When the compilation target is L2, downward compilation expands into an end-to-end offline pipeline. Given a business requirement and its scoring criteria, the agent compiles the requirement into a lightweight inference asset across five stages, with no online LLM dependency at any point.
+
+**Routing assessment**. Split along two axes — input regularity and clarity of the decision boundary:
+
+- Highly regular input, decision formulaizable → L3/L4, no training triggered
+- Relies on open-ended commonsense reasoning or generation → route back to L1
+- Irregular input with heavy colloquial paraphrasing (rules can never be exhaustive), yet a clear decision boundary and a narrow output scale → L2 classification/regression. Example: scoring daily-report quality — the scale (0/2/5) and compliance criteria are explicit, while text variants cannot be enumerated by rules
+
+**Offline data factory**. Traditional ML's bottleneck is the training set. Here the LLM acts as an offline synthetic labeler: sample hundreds of real business inputs, batch-label them across multiple dimensions with structured prompts, then augment negatives via synonym rewriting into a balanced dataset. A few thousand labeled samples cost only a few dollars — a one-time offline investment, decoupled from online traffic.
+
+**Automatic feature synthesis**. Features are aligned automatically per the chosen algorithm, replacing the algorithm engineer's manual feature work:
+
+- Statistical features: character counts, punctuation density, part-of-speech ratios
+- Text features: TF-IDF sparse matrices
+- Dense semantic vectors: a local micro embedding model (MiniLM-L12, same as in the Multilingual section, here used as a general feature extractor) maps text to continuous vectors whose inherent generalization absorbs synonym rewrites
+
+Vector extraction is L3, fitting is L2 — the L3→L2 cascade is the pipeline's norm and does not violate the pyramid rule.
+
+**Micro training**. Fitting completes on local CPU without GPUs. Two routes, chosen by task shape:
+
+- Tree models (XGBoost/LightGBM, SVM): fast to fit, highly interpretable, microsecond inference, dependent on feature-engineering quality
+- Micro Transformers (DistilBERT, MacBERT-Tiny class, ≤100M parameters): attach a multi-task classification head, fine-tune for 3–5 epochs, stronger long-text semantic generalization, one forward pass emits several channels at once (item quality, time compliance, blocker authenticity)
+
+**Asset export**. Both routes convert to ONNX and ship as a decoupled deployment package:
+
+- `model.onnx`: model weights, under 50MB
+- `tokenizer.json`: tokenization config
+- `meta_rules.json`: pre-feature-processing and post-threshold decision rules
+
+L3 rules are delivered alongside L2 weights — this is what "compiled artifacts" concretely means: not loose Python training scripts, but a native asset package independent of the runtime environment.
+
+With the asset loaded, the online path becomes:
+
+```
+Input text
+  ↓  Rust tokenizer            ~10 microseconds
+Token ID matrix
+  ↓  ONNX Runtime (ort)        1–3 milliseconds, local CPU + SIMD
+Multi-dimensional confidence
+  ↓  L3 deterministic gate     nanoseconds, threshold cross-checks
+Final score
+```
+
+Two conclusions: first, the online path carries zero LLM dependency — Token cost and multi-second latency are replaced by millisecond statistical determinism; second, L2's output is not the endpoint — confidence must pass the L3 hard-constraint gate before a total score is produced. The compiled artifact still obeys the pyramid rule at runtime.
+
 ### Flow 2: Upward Feedback (Runtime → Optimization)
 
 ```
@@ -204,6 +252,8 @@ IF customer no reply for 30 days THEN switch follow-up strategy
 
 Rules are retained permanently — as data accumulates, gradually transition to L2 ML models.
 
+A second leg for cold start: rather than waiting for real labeled data to accumulate naturally, have the LLM batch-label synthetic training sets offline (see the Compilation Pipeline) — a few thousand samples for a few dollars, so L2 need not wait out a data-collection period. A one-time offline cost buys online zero cost, consistent with the System Capacity cost logic.
+
 ### Multilingual: L3 Lightweight Vector Models
 
 Google Maps merchant websites span the globe. L3 introduces local cross-lingual vectors:
@@ -214,7 +264,7 @@ Google Maps merchant websites span the globe. L3 introduces local cross-lingual 
 | FastText | Word vectors | 157 languages | Local CPU |
 | LaBSE | 470M | 109 languages | Local CPU |
 
-Local vectorization + cosine similarity. No API calls, no Token consumption, millisecond response.
+Local vectorization + cosine similarity. No API calls, no Token consumption, millisecond response. The same class of micro embedding model can also leave the cross-lingual scenario and act as a general feature extractor, mapping colloquial text into dense vectors whose generalization feeds L2 fitting (see the Compilation Pipeline).
 
 ---
 
