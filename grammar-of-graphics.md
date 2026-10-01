@@ -146,6 +146,8 @@ document.getElementById("plot").innerHTML = render_geo(JSON.stringify({
 
 ## 五、被淘汰的竞品与边界
 
+图形语法解决的是"数据→图表"的编码问题；当需求越过平面图表、进入**自定义空间展示**（3D 网络拓扑、大规模点云、deck.gl 式地理场景）时，选型逻辑换轨——那是渲染库的 API 风格与体积之争，不再有 encoding→scale 的自动推断可用，见 `3d-rendering-library-selection.md`。
+
 - **ECharts / AntV G2 原版**：含完整渲染引擎（如 ZRender），体积通常 MB 级，对包体积敏感的太重。
 - **Chart.js**：体积小，但属配置字典驱动，AI 极易盲猜参数出错。
 - **D3.js**：底层操作工具，无图表抽象，AI 需写上百行 DOM 操作，出错率极高。

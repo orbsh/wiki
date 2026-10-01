@@ -111,6 +111,7 @@
 | [国内 AI 产业制度性缺陷](ai-industry-institutional-critique.md) | | 蒸馏/刷分现象、评审体制逆向选择、自由市场 vs 国家主导 |
 | [AI 辅助视频制作与游戏引擎](ai-creative-production-workflow.md) | | AI 视频 10 秒魔咒、UE6/Bevy 路线、AI+Blender 工作流 |
 | [3D 数据可视化](3d-data-visualization-aesthetics.md) | | 3D 作为叙事语言：物理流动/空间体积/纵深层级/材质语义 + 通用可视化问题的 3D 解法 |
+| [3D 渲染库选型](3d-rendering-library-selection.md) | | 自定义空间展示的渲染库之争：three.js/three-d/Bevy/deck.gl API 风格 + wasm 体积实测 |
 
 ## 工具与环境
 
