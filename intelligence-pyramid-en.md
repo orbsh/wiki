@@ -122,6 +122,8 @@ Online (L2): LightGBM predicts conversion probability locally
 
 **Wrong approach**: Call LLM Prompt for every customer judgment. **After offloading**: Online LLM inference completely offloaded to zero-cost local matrix operations.
 
+The architectural basis for offloading: an LLM's scale exists to house as many tasks as one set of parameters can. The trained weights are frozen and never change; the multi-task reach comes from two things — attention makes each token's computation depend on its context (what varies is the information mix, not the parameters), and mixture-of-experts routing activates only a corner of the network per input. A single task (fixed spec + predictable decision boundary) uses none of that multi-task machinery; running an LLM online for one judgment means paying the entire general knowledge base to serve a single decision. L2's capacity is the exact match. The engineering cost disappears once L1 takes over the traditional-ML lifecycle offline (feature design, synthetic labeling) — see the Silex compilation executor.
+
 ### Path 3: Decision Offloading (L3 replaces L1)
 
 ```
