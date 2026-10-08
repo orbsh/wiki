@@ -58,6 +58,7 @@
 |:--|:--|:--|
 | [Redis 批判](redis-critique.md) | | 网络延迟陷阱、单线程瓶颈、内存浪费 |
 | [高并发批判](high-concurrency-critique.md) | | 「高并发」作为简中特有话语的解剖：词汇量纲缺失、面试循环繁殖、fpm 防御性焦虑 |
+| [0→1 话语批判](innovation-discourse-critique.md) | | 「0→1 / 1→100」话术的解剖：用跨度冒充高度、应用遥遥领先的证伪、市场对创新课税、体量≠能力、应用工程≠计算机科学、可替代性判据 |
 | [Nginx 批判](nginx-critique.md) | | 为何 Nginx 过时：多进程低效、静态配置、Lua 复杂性 |
 | [MySQL 批判](mysql-critique.md) | | MySQL 的架构缺陷 |
 | [等保标准批判](mlps-critique.md) | | 等保标准与现代安全实践的差异：云环境适配、密码轮换、防火墙、审计 |
