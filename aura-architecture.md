@@ -485,7 +485,7 @@ def handle(ctx, user_message=None):
 - **实例化与分片**：同一 instance key 串行（状态一致），异 key 并行；**数据跟随所属节点（联邦裁决）**——instance key 作用域是节点内部，无全局放置、无跨节点重分片
 - **跨 Partition 查询**：投影摊位（持续聚合，推荐）/ Arrow HTAP（ad-hoc 列式扫描）
 - **统一调用模型**：`ctx.invoke()` 是唯一受控调用面；冷调用（触达人类/外部系统）wait 不进入 park，挂起写事件流，`resolve_call` 重入
-- **投递语义**：进程内事件因果有序；无共识层——跨节点按联邦形态，域间消息显式寻址（不做全局事件排序）
+- **投递语义**：进程内事件因果有序；无共识层——跨节点按联邦形态，域间消息显式寻址（不做全局事件排序）；物理依据与尺度量化见 [分布式协作拓扑](distributed-collaboration-topology.md) §2
 - **持久事件队列（ADR-0014）**：事件投递的存储形态是 okm 内嵌持久分区（`[mq-data][event][part_id][time]` + `[mq-cursor][event][part_id][摊位]`），不是内存 channel——emit 即落盘（被动保存与摊位状态的主动保存同引擎双轨）、实例驱逐期间的积压在重新激活后照常送达（scale-to-zero 不丢触发）、慢消费者积压可见且可「跳到最新」（skip-to-now 兜底阀门）、N 个订阅者 = 一个分区 + N 个游标（per-摊位 mailbox 的 N 份复制从结构上消失）。**保留 = 活跃订阅者的最小水位线**（分母来自路由注册表，陈旧游标不钉死水位线；积压深度是 mq-data 前缀的 okm reduce 实时计数）；队列是缓冲不是存储——at-least-once 仅在订阅者保持注册期间成立，摊位状态（类型 collections）是 durable truth。「不引入队列组件」指不引入外部重型队列；嵌入式持久分区是事件被动保存的自然形态。当前实现为 broadcast 过渡形态，持久化重写在 4.5c step 2b
 
 完整设计细节（路由表结构、四种触发模式 on_join/on_batch/on_debounce、Collector、通配符匹配、投递代码、宿主实现、MQ 分解）见 **aura 仓库 [`docs/design/realm.md`](https://github.com/orbsh/aura/blob/main/docs/design/realm.md)**。
