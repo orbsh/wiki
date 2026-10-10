@@ -186,7 +186,7 @@ Agent 主循环在单个摊位实例中运行（instance key = session_id）。�
 
 主循环本身可以进一步收缩为纯函数——会话即数据：摊位按 `session_id` 从记忆系统取完整会话 → 跑 turn → 存会话，会话持久化与恢复全部沉到记忆系统，摊位在两次调用之间无状态，`on_sleep`/`on_wake` 退化为存取两个动作。循环不再持有会话状态、不改写历史，所有函数调用对它都是普通记录；工具调用格式的裁剪发生在记忆系统的序列化视图层，存储层始终完整。
 
-无状态 Agent 的完整组件架构独立成篇：循环组件（Gravity）、入口（Prism）、执行触手（Probe，Aura 内嵌/远程触手两形态）、skill 涌现闭环与传输裁决，见 [无状态 Agent 架构](stateless-agent-architecture.md)；记忆侧设计见 Krystallizer ADR-0006（无状态 Agent 集成）。
+无状态 Agent 的完整组件架构独立成篇：循环组件（Gravity）、入口（Prism）、执行器（Effector，Aura 内嵌/远程执行器两形态）、skill 涌现闭环与传输裁决，见 [无状态 Agent 架构](stateless-agent-architecture.md)；记忆侧设计见 Krystallizer ADR-0006（无状态 Agent 集成）。
 
 工具和 Skill 不是静态文件，而是 graph-memory 中高工具指数的子图——使用数据自动聚类涌现 Skill 边界，Agent 运行时通过向量搜索发现相关 Skill 边，按权重排序注入上下文。
 

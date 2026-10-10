@@ -23,7 +23,7 @@ f(session, user_input) -> session'
 | **Krystallizer** | 结晶 | 会话真相唯一持有者：append-only 会话 + prefix checkpoint + 视图裁剪；技能图谱与涌现 | 记忆面（mem-core 嵌入或独立服务） |
 | **Prism** | 棱镜 | 入口：鉴权、请求解析、把 turn 投进场域。WS 网关 + CLI（包装 WS） | 基于 Aura，纯入口，无队列无状态 |
 | **Gravity** | 引力 | turn 执行器：取会话 → 跑 turn → 存增量。turn 被会话真相牵引运转；单趟执行（一个 turn 一趟），非常驻循环 | Aura 中的摊位类型（partition key = session_id）；自带 CLI 驱动循环，本地模式即循环执行 turn |
-| **Probe** | 探针 | 操作执行环境：容器化执行环境 + 操作触手。接收下发的操作与参数（skill 对其不可见——skill 的解析与选择发生在 Gravity/LLM 侧），执行结果作为 tool result 回流 | Aura 基座组件，也可独立部署为远程服务 |
+| **Effector** | 探针 | 操作执行环境：容器化执行环境 + 操作执行器。接收下发的操作与参数（skill 对其不可见——skill 的解析与选择发生在 Gravity/LLM 侧），执行结果作为 tool result 回流 | Aura 基座组件，也可独立部署为远程服务 |
 
 ```
          请求
@@ -35,13 +35,13 @@ f(session, user_input) -> session'
                                 │          │ 任务帧（操作+参数）
               fetch session     │          ▼
               append delta   ┌──▼─────────┐  操作执行    ┌───────┐
-              (full mode)    │Krystallizer│            │ Probe │
+              (full mode)    │Krystallizer│            │ Effector │
                              │(memory +   │            │local/ │
                              │ skill 图谱)│            │remote │
                              └───────────┘◄────────────┘───────┘
                                              tool result
 ```
-（skill 解析发生在 Gravity 侧：Krystallizer → Gravity 的会话取用里带上解析结果；Probe 只见操作与参数。）
+（skill 解析发生在 Gravity 侧：Krystallizer → Gravity 的会话取用里带上解析结果；Effector 只见操作与参数。）
 
 ### Prism：入口收缩
 
@@ -53,7 +53,7 @@ Prism 基于 Aura，刻意薄：鉴权 + 解析 + 投递。队列、重试、超
 
 Gravity 的全部职责：Krystallizer full 模式取会话 → LLM 调用与工具调用循环 → 新增消息 append 回去。本质上每个 Gravity 是**单趟**的：一个 turn 一趟执行，跑完即止——没有常驻循环实体，「循环」只是 turn 的连续投递。名字取引力（Gravity）而非轨道（Orbit）正在于此：轨道是常驻物体的属性，引力是每趟都被施加的力——turn 落地即被会话真相牵引，执行完就释放，下趟另行落点。
 
-实现为 Rust 外壳 + 多语言内嵌（Aura 既定拓扑：Rust 高性能外壳，Steel/Python/Wasm 经 PyO3/Wasmtime 内嵌，零 IPC）。Gravity 本身不感知工具脚本的语言——tool call 进、tool result 出，语言多样性在 Probe 侧解决。
+实现为 Rust 外壳 + 多语言内嵌（Aura 既定拓扑：Rust 高性能外壳，Steel/Python/Wasm 经 PyO3/Wasmtime 内嵌，零 IPC）。Gravity 本身不感知工具脚本的语言——tool call 进、tool result 出，语言多样性在 Effector 侧解决。
 
 **LLM 调用归属 Gravity**：压缩等尾提示词触发的 LLM 调用由 Gravity 实现——上下文缓存与模型（及账户）绑定，只有发起推理的一侧才知道模型信息。Krystallizer 只提供原语（分支注入、摘要收集、checkpoint 写入），不持有任何模型身份；唯一例外是它内部的向量嵌入（嵌入空间与数据正确性绑定，归记忆系统自持）。详见 [Krystallizer](krystallizer.md)。
 
@@ -306,32 +306,34 @@ memory.write_assistant_message(session_id, assistant)  # 写入 DB + 清空 pend
 
 Aura 中 Gravity 是一个摊位类型：同一会话串行（摊位单线程语义，partition key = session_id），不同会话并行；turn 之间默认 scale-to-zero，`on_sleep`/`on_wake` 退化为存取两个动作——保留期驻留是此默认的细化：驻留窗口内同会话 turn 复用执行体，超时/显式释放才落入存取两个动作（见统一调用模型一节）。流式输出经高频 emit 事件转 SSE 推送——传输面由 Prism 的 WS 网关承载（Gravity 与 Prism 之间仍是场域事件，无直接连接）。
 
-### Probe：执行与触手
+### Effector：执行器
 
-Probe 是操作的执行环境——**执行只提供运行时，不在 Krystallizer 中执行**。skill 对 Probe 不可见：skill 是 Krystallizer 图谱中涌现的子图，Gravity 驱动 LLM——LLM 选择操作、生成参数，这个选择就是 skill 的执行；Probe 拿到的只有操作和参数（外加操作携带的代码）。隔离模型：**Probe 自身打包为容器**（base image + 按需安装依赖），隔离按节点切，不按 skill 切——同容器内的操作共享其文件系统，「受限世界」由 capability surface（应用层检查）执行，不靠容器边界。这在 realm 隔离机制（Phase 3.6，构造期前缀隔离，绑定维度是应用决定——按 user 切是 gravity 的选择，不是框架预设；不按 skill 切；ADR-0028 由 namespace 改名）下成立；仅当多租户共享节点成为真实需求时才重提 per-skill 隔离。**Probe 绑定为摊位类型的执行 affinity**（类型声明指向 node 别名），控制面对它的调用走标准 invoke 路由，与场内摊位无异。
+Effector 是操作的执行环境——**执行只提供运行时，不在 Krystallizer 中执行**。skill 对 Effector 不可见：skill 是 Krystallizer 图谱中涌现的子图，Gravity 驱动 LLM——LLM 选择操作、生成参数，这个选择就是 skill 的执行；Effector 拿到的只有操作和参数（外加操作携带的代码）。隔离模型：**Effector 自身打包为容器**（base image + 按需安装依赖），隔离按节点切，不按 skill 切——同容器内的操作共享其文件系统，「受限世界」由 capability surface（应用层检查）执行，不靠容器边界。这在 realm 隔离机制（Phase 3.6，构造期前缀隔离，绑定维度是应用决定——按 user 切是 gravity 的选择，不是框架预设；不按 skill 切；ADR-0028 由 namespace 改名）下成立；仅当多租户共享节点成为真实需求时才重提 per-skill 隔离。**Effector 绑定为摊位类型的执行 affinity**（类型声明指向 node 别名），控制面对它的调用走标准 invoke 路由，与场内摊位无异。
 
-**Probe 绑定 = 类型 affinity，信任 = 节点身份（Aura PLAN 4.10 / ADR-0015 裁决）**。Probe 绑定到摊位 TYPE（affinity 是元数据：类型声明指向哪个 Probe 节点，注册表记录摊位→probe 绑定），从不绑用户——「probe 注册凭证 = 用户凭证 → 推导 namespace（现名 realm）」已被取代：那是把租户假设（用户存在）焊进基座层；无用户应用（内网算力网格：每节点一个 probe，摊位侧分片任务）是一等公民。信任问题与用户问题分离：「这台机器可以执行」是部署层裁决，走节点身份握手（ed25519，ADR-0015——节点本地生成密钥对，gateway challenge 应答，别名冲突拒绝而不顶替；2026-09-25 归属修订：握手/登记表/审批端点住 **prism 网关**（prism PLAN Phase 1.8），aura 侧已落地的是顶替可见性 + 未认证姿态启动披露——当前注册仍丢弃凭证，防护即网络边界）；「这是谁的请求」是应用层裁决，身份随 payload 元数据携带（gravity 自己区分用户——可按用户组织类型/实例，框架不预设用户维度）。realm 隔离机制保留（构造期前缀隔离，跨 realm 不可表达），绑什么维度是应用的决定。**tool 目标解析 = 类型 affinity + node 别名**；「把家里电脑的文件发到办公室电脑」就是两个 invoke 的编排（home 读 → office 写），编排逻辑在 Gravity/LLM，执行位置在注册表里，两者正交——Gravity 不区分远程/本地，区分发生在目标解析层。
+**Effector 绑定 = 类型 affinity，信任 = 节点身份（Aura PLAN 4.10 / ADR-0015 裁决）**。Effector 绑定到摊位 TYPE（affinity 是元数据：类型声明指向哪个 Effector 节点，注册表记录摊位→effector 绑定），从不绑用户——「effector 注册凭证 = 用户凭证 → 推导 namespace（现名 realm）」已被取代：那是把租户假设（用户存在）焊进基座层；无用户应用（内网算力网格：每节点一个 effector，摊位侧分片任务）是一等公民。信任问题与用户问题分离：「这台机器可以执行」是部署层裁决，走节点身份握手（ed25519，ADR-0015——节点本地生成密钥对，gateway challenge 应答，别名冲突拒绝而不顶替；2026-09-25 归属修订：握手/登记表/审批端点住 **prism 网关**（prism PLAN Phase 1.8），aura 侧已落地的是顶替可见性 + 未认证姿态启动披露——当前注册仍丢弃凭证，防护即网络边界）；「这是谁的请求」是应用层裁决，身份随 payload 元数据携带（gravity 自己区分用户——可按用户组织类型/实例，框架不预设用户维度）。realm 隔离机制保留（构造期前缀隔离，跨 realm 不可表达），绑什么维度是应用的决定。**tool 目标解析 = 类型 affinity + node 别名**；「把家里电脑的文件发到办公室电脑」就是两个 invoke 的编排（home 读 → office 写），编排逻辑在 Gravity/LLM，执行位置在注册表里，两者正交——Gravity 不区分远程/本地，区分发生在目标解析层。
 
-**数据路径留给操作与用户环境**。控制面只递指令和结果摘要：Result 是消息，保持小；工具执行产生的大产物（文件、二进制）不进控制面——操作在 Probe 侧自行处置（本地文件系统、用户配置的传输工具、声明的传输类操作），跨机器传输的可达性要求（直连/VPN）是 Gravity 侧 skill 元数据的声明，控制面不感知数据路径，Aura 保持对存储细节的无知。AI 生成的函数调用参数是指令语义（路径、选项、少量片段），天然量级有限；控制面只需一个宽松的消息上限防异常，不构成数据面设计。
+**数据路径留给操作与用户环境**。控制面只递指令和结果摘要：Result 是消息，保持小；工具执行产生的大产物（文件、二进制）不进控制面——操作在 Effector 侧自行处置（本地文件系统、用户配置的传输工具、声明的传输类操作），跨机器传输的可达性要求（直连/VPN）是 Gravity 侧 skill 元数据的声明，控制面不感知数据路径，Aura 保持对存储细节的无知。AI 生成的函数调用参数是指令语义（路径、选项、少量片段），天然量级有限；控制面只需一个宽松的消息上限防异常，不构成数据面设计。
 
 两种部署形态，同等支持：
 
 - **Aura 内嵌**：作为 Aura 执行基座（Wasmtime 沙箱谱系的重隔离端——Wasm 管不动真文件系统/真网络/系统包时，容器顶上），场域内调用触达。
-- **远程触手**：部署在用户自己的电脑或目标服务器上，就是那台机器的操作触手：部署在哪，就能操作哪。内网/NAT 下的机器没有入站可达性，唯一可行拓扑是 **outbound 长连接**：Probe 启动时主动向控制面发起连接并注册（我在线、我能做什么），此后保持连接，任务由控制面沿连接下推（WS 帧）。连接方向 outbound，数据方向下行推送，不开入站端口——Probe 所在网络的入站拓扑无关紧要。长轮询（反复 HTTP 询问）是此模式的弱化实现。
+- **远程执行器**：部署在用户自己的电脑或目标服务器上，就是那台机器的操作执行器：部署在哪，就能操作哪。内网/NAT 下的机器没有入站可达性，唯一可行拓扑是 **outbound 长连接**：Effector 启动时主动向控制面发起连接并注册（我在线、我能做什么），此后保持连接，任务由控制面沿连接下推（WS 帧）。连接方向 outbound，数据方向下行推送，不开入站端口——Effector 所在网络的入站拓扑无关紧要。长轮询（反复 HTTP 询问）是此模式的弱化实现。
 
-**连接面是 Probe 摊位的 transport 适配器，不是旁路**。WS 连接把 outbound 长连接包装成 Realm 的事件投递语义：帧下行 = 向该 Probe 实例的事件队列写入（probe 摊位是自己命令队列的单例订阅者），帧上行 = 该实例的 return（reply_to 回填，走 `resolve_call` 与 HTTP 响应、摊位 return 同一投递通道）。`ctx.invoke("probe:<node_id>:<tool>")` 的最后一跳落在连接面上，Gravity 写的只是标准摊位调用。同一节点的任务串行由 per-subscription cursor 的串行消费免费获得；超时/错误复用 `pending_calls` 的 deadline 扫描。
+**连接面是 Effector 摊位的 transport 适配器，不是旁路**。WS 连接把 outbound 长连接包装成 Realm 的事件投递语义：帧下行 = 向该 Effector 实例的事件队列写入（effector 摊位是自己命令队列的单例订阅者），帧上行 = 该实例的 return（reply_to 回填，走 `resolve_call` 与 HTTP 响应、摊位 return 同一投递通道）。`ctx.invoke("effector:<node_id>:<tool>")` 的最后一跳落在连接面上，Gravity 写的只是标准摊位调用。同一节点的任务串行由 per-subscription cursor 的串行消费免费获得；超时/错误复用 `pending_calls` 的 deadline 扫描。
 
-**skill 分发：每次 tool call 实时解析，零缓存。** 涌现的前提是零陈旧窗口——一个实例踩坑解决后存进图谱，任何地方的下一次执行立即拿到新版。skill 生命周期对齐到 tool call 粒度，与「调用只有一种模式」同构：skill 解析是普通读取，不是需要失效策略的缓存问题。分界：解析发生在 Gravity 侧（Krystallizer → Gravity，涌现回路的权重回写也在此），Probe 不感知 skill、不发起拉取、两次调用之间不持有任何东西——它收到的任务帧里是什么就执行什么。
+**skill 分发：每次 tool call 实时解析，零缓存。** 涌现的前提是零陈旧窗口——一个实例踩坑解决后存进图谱，任何地方的下一次执行立即拿到新版。skill 生命周期对齐到 tool call 粒度，与「调用只有一种模式」同构：skill 解析是普通读取，不是需要失效策略的缓存问题。分界：解析发生在 Gravity 侧（Krystallizer → Gravity，涌现回路的权重回写也在此），Effector 不感知 skill、不发起拉取、两次调用之间不持有任何东西——它收到的任务帧里是什么就执行什么。
 
-**操作代码的两种形态：内联与链接。** 一般 py/steel 脚本很小（KB 级），随任务帧内联（inline）直接下发，零额外往返。Wasm 产物可能到 MB 级，内联会撑大任务帧——控制面可提供**可选 HTTP 端口**下发大产物：URL 带内容版本号（代码的内容哈希），CDN/缓存层可据此缓存——这是 CDN 友好缓存，不是 Probe 侧代码缓存（零持有的裁决不变：内容变了版本号就变，URL 即失效策略）。两种形式由任务上下文声明：`inline`（字节在帧里）或 `link`（URL + 版本号 + 期望哈希）。
+**操作代码的两种形态：内联与链接。** 一般 py/steel 脚本很小（KB 级），随任务帧内联（inline）直接下发，零额外往返。Wasm 产物可能到 MB 级，内联会撑大任务帧——控制面可提供**可选 HTTP 端口**下发大产物：URL 带内容版本号（代码的内容哈希），CDN/缓存层可据此缓存——这是 CDN 友好缓存，不是 Effector 侧代码缓存（零持有的裁决不变：内容变了版本号就变，URL 即失效策略）。两种形式由任务上下文声明：`inline`（字节在帧里）或 `link`（URL + 版本号 + 期望哈希）。
 
-**极端环境回退：只允许 WS 时走通道。** 内网策略可能禁止任意 HTTP 出站、只放行已建立的 WS 连接——此时 `link` 形态降级为经 WS 通道分块下发（同一帧协议的续帧），Probe 无需感知差异：任务上下文声明什么就消费什么，降级是控制面装配任务帧时的决策（探测/配置知道该节点能否出站 HTTP），不是 Probe 的运行时判断。
+**极端环境回退：只允许 WS 时走通道。** 内网策略可能禁止任意 HTTP 出站、只放行已建立的 WS 连接——此时 `link` 形态降级为经 WS 通道分块下发（同一帧协议的续帧），Effector 无需感知差异：任务上下文声明什么就消费什么，降级是控制面装配任务帧时的决策（探测/配置知道该节点能否出站 HTTP），不是 Effector 的运行时判断。
 
-**解析路径：Krystallizer → Gravity，不经过 Probe，更不直连。** 三条理由：访问控制——Krystallizer 只需信任 Gravity 一层，容器（执行不受信任代码）不持有数据面凭证；网络拓扑——远程 Probe 只有 outbound 可达控制面，未必能直连存储网；注入点——Gravity 在此做视图处理与 `tool_invoke_count` 权重回写，这是涌现回路的数据关口，绕开即断。Probe 侧没有拉取动作：它收到的任务帧是 Gravity 组装完的成品。HTTP 大产物端口是此路径的例外形态：**决策**全在 Gravity（要不要、哪个版本），只有**字节流**经 CDN 旁路直达 Probe——版本号 + 哈希校验保证旁路字节与决策一致。
+**解析路径：Krystallizer → Gravity，不经过 Effector，更不直连。** 三条理由：访问控制——Krystallizer 只需信任 Gravity 一层，容器（执行不受信任代码）不持有数据面凭证；网络拓扑——远程 Effector 只有 outbound 可达控制面，未必能直连存储网；注入点——Gravity 在此做视图处理与 `tool_invoke_count` 权重回写，这是涌现回路的数据关口，绕开即断。Effector 侧没有拉取动作：它收到的任务帧是 Gravity 组装完的成品。HTTP 大产物端口是此路径的例外形态：**决策**全在 Gravity（要不要、哪个版本），只有**字节流**经 CDN 旁路直达 Effector——版本号 + 哈希校验保证旁路字节与决策一致。
+
+**应用形态三分（讨论中）。** 组件四分预设了会话型应用；非聊天应用（mudra、scratch 一类 memory-primary 应用）没有 turn 序列，会话投影缺位：Surface 2（事实图谱）即全部记忆面，Surface 1 仅当存在可分叉的 turn 序列时以任务 id 为键复用。应用自身的结构化状态（任务实例态、状态字段）不进记忆管线——精确枚举归应用自己的表，近似检索才归图谱。不需要新接口面：核心无策略边界验证。
 
 ### 统一调用模型：CallSlot
 
-本地调用（场内函数）与远程调用（触手上的工具执行）在框架层统一为同一个模型：发起 → call_id 关联 → 回填。这个模型不是新机制——**就是 Aura 的 `ctx.invoke()`**（oneshot + `pending_calls` 表 + `reply_to` 机制，见 [Aura 架构](aura-architecture.md) §5.14）：发起时登记 pending call、call_id 进任务上下文；执行完成按 call_id 找到条目，值放进 oneshot，发起方完成调用。调用方（Gravity 执行体）不感知执行位置——target 由 `invoke.toml` 注册表分派：HTTP 服务、场内摊位、远程 Probe 是注册表里的三类条目，同一 API。这是「调用只有一种模式」在调用层的实现：调用模式统一了，传输才只需要裁决一次。错误处理沿用既定裁决——失败作为值放进 oneshot（Result），不另开第二通道。
+本地调用（场内函数）与远程调用（Effector 上的工具执行）在框架层统一为同一个模型：发起 → call_id 关联 → 回填。这个模型不是新机制——**就是 Aura 的 `ctx.invoke()`**（oneshot + `pending_calls` 表 + `reply_to` 机制，见 [Aura 架构](aura-architecture.md) §5.14）：发起时登记 pending call、call_id 进任务上下文；执行完成按 call_id 找到条目，值放进 oneshot，发起方完成调用。调用方（Gravity 执行体）不感知执行位置——target 由 `invoke.toml` 注册表分派：HTTP 服务、场内摊位、远程 Effector 是注册表里的三类条目，同一 API。这是「调用只有一种模式」在调用层的实现：调用模式统一了，传输才只需要裁决一次。错误处理沿用既定裁决——失败作为值放进 oneshot（Result），不另开第二通道。
 
 **两级等待**：等待端按调用性质分流，不是全局二选一。调用处永远只有一行 `slot.wait().await`，运行时在阻塞发生之前按声明分流——分流点在入口，不在等待中途。
 
@@ -355,14 +357,14 @@ skill 不是静态文件，是 Krystallizer 图谱中高工具指数的子图（
         ↓ 聚类涌现
 高权重子图 = skill 边界 → Gravity 运行时发现（向量搜索 + 权重排序）
         ↓ tool call
-Gravity 组装任务帧下发 → Probe 执行 → tool_invoke_count 回写权重 → 影响下次排序
+Gravity 组装任务帧下发 → Effector 执行 → tool_invoke_count 回写权重 → 影响下次排序
 ```
 
 涌现的原料回路复用 Krystallizer 既有机制（权重 delta 计数、图聚类），不新建系统。
 
 ## 传输裁决：入口 WS，内部无连接
 
-WS 用在两个有状态的位置。其一是 Prism 与客户端之间（用户到入口，长连接天然贴合交互会话）。其二，范围限定：**WS 不进入场内执行路径**——场内 Gravity 与 Prism/Probe 之间是 Aura 场域事件，无直接连接；turn 的执行体不持有连接，连接钉在常驻组件上。远程 Probe 是例外：内网机器没有入站可达性，其 outbound 长连接是控制面触达它的唯一通道，任务沿连接下推——这条 WS 钉在控制面连接面上，与入口 WS 同一裁决；turn 的执行体收到的是沿连接下来的调用，本身仍单趟（保留期驻留，见统一调用模型一节）。
+WS 用在两个有状态的位置。其一是 Prism 与客户端之间（用户到入口，长连接天然贴合交互会话）。其二，范围限定：**WS 不进入场内执行路径**——场内 Gravity 与 Prism/Effector 之间是 Aura 场域事件，无直接连接；turn 的执行体不持有连接，连接钉在常驻组件上。远程 Effector 是例外：内网机器没有入站可达性，其 outbound 长连接是控制面触达它的唯一通道，任务沿连接下推——这条 WS 钉在控制面连接面上，与入口 WS 同一裁决；turn 的执行体收到的是沿连接下来的调用，本身仍单趟（保留期驻留，见统一调用模型一节）。
 
 这条裁决替代了此前的「HTTP + SSE 默认」方案。修正的理由：连接状态的问题不在 WS 本身，在**连接钉在哪**。Prism 基于 Aura（常驻、多实例由场域调度），把连接收在 Prism 上，WS 的负载均衡/断线重连由 Aura 的连接面统一解决一遍，不会渗入执行层；而 HTTP+SSE 方案会让每个组件各自暴露 HTTP 端点，入口协议碎片化。CLI 包装 WS 后，全部客户端（人、CLI、脚本）走同一条协议，**调用只有一种模式**在传输层也成立。
 
@@ -377,7 +379,7 @@ WS 用在两个有状态的位置。其一是 Prism 与客户端之间（用户�
 | 多实例 | 粘性会话 / 状态同步 | 免费——turn 落任何实例 |
 | 挂起恢复 | 自研持久化 | scale-to-zero = 存取两个动作 |
 | 部署 | 常驻服务 | 本地循环 / Aura 摊位 / 函数计算同构 |
-| 工具执行 | 进程内或 RPC | Probe（容器/触手），skill 实时涌现 |
+| 工具执行 | 进程内或 RPC | Effector（容器），skill 实时涌现 |
 | 传输 | 常见 WS 长连接贯穿执行层 | 入口 WS（Prism），执行路径无连接 |
 
 ## 交叉引用

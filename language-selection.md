@@ -184,9 +184,9 @@ Python 的正确用法：**短期、数据密集、生态依赖**。超过 6 个
 - **分发摩擦**：Nushell 脚本分享给非 Nushell 用户时，对方缺乏运行环境和知识
 - **教程资源/AI 熟练度不如 Python**：遇到问题时可参考的资料和 AI 能力都弱一档
 
-### Probe carrier 用例
+### Effector carrier 用例
 
-[Probe](stateless-agent-architecture.md)（无状态 Agent 架构的执行触手）是 Nushell 领地的直接兑现：Probe 的语言 carrier 里，nu 负责系统交互型操作——操作代码从任务帧下发，wrapper 导入后把 JSON 参数从 stdin 灌入（`$in`），调用操作声明的入口函数，结果以结构化 JSON 回流。强制 nushell 执行、无 bash 回退：静态类型在进程边界上继续守住管道数据的正确性，AI 生成的操作代码在结构化管道里比在文本 shell 里可靠得多。这正是四象限中「静态 + 脚本」象限的工程落点——系统交互型操作走 nu，数据处理/AI 走 Python，嵌入式策略走 Steel，第三方代码走 Wasm。
+[Effector](stateless-agent-architecture.md)（无状态 Agent 架构的执行器）是 Nushell 领地的直接兑现：Effector 的语言 carrier 里，nu 负责系统交互型操作——操作代码从任务帧下发，wrapper 导入后把 JSON 参数从 stdin 灌入（`$in`），调用操作声明的入口函数，结果以结构化 JSON 回流。强制 nushell 执行、无 bash 回退：静态类型在进程边界上继续守住管道数据的正确性，AI 生成的操作代码在结构化管道里比在文本 shell 里可靠得多。这正是四象限中「静态 + 脚本」象限的工程落点——系统交互型操作走 nu，数据处理/AI 走 Python，嵌入式策略走 Steel，第三方代码走 Wasm。
 
 ### 边界
 

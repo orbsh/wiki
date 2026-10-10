@@ -7,9 +7,9 @@
 | 文档 | English | 内容 |
 |:--|:--|:--|
 | [图谱化记忆](graph-memory.md) | | **设计文档**：计算时机光谱、属性图定位、原子三元组、双层模型、聚簇策略、权重系统、编码场景 |
-| [无状态 Agent 架构](stateless-agent-architecture.md) | | **架构总纲**：turn 即执行单位、组件四分（Prism/Gravity/Krystallizer/Probe）、Surface 设计（注入与触发）、压缩并行旁路、skill 涌现闭环、传输裁决 |
+| [无状态 Agent 架构](stateless-agent-architecture.md) | | **架构总纲**：turn 即执行单位、组件四分（Prism/Gravity/Krystallizer/Effector）、Surface 设计（注入与触发）、压缩并行旁路、skill 涌现闭环、传输裁决 |
 | [Krystallizer](krystallizer.md) | | **实现设计**：会话控制原语（branch/tail/summarize）、full/assist 双模式、提取机制三方案、KDL 序列化、存储实现、skillforge 实现现状 |
-| [无状态 Agent 架构](stateless-agent-architecture.md) | | **架构设计**：turn 即执行单位、组件四分（Prism/Gravity/Krystallizer/Probe）、skill 涌现闭环、HTTP+SSE 传输裁决、与传统架构对照 |
+| [无状态 Agent 架构](stateless-agent-architecture.md) | | **架构设计**：turn 即执行单位、组件四分（Prism/Gravity/Krystallizer/Effector）、skill 涌现闭环、HTTP+SSE 传输裁决、与传统架构对照 |
 | [记忆选型](agent-memory.md) | [Memory Architecture](agent-memory-en.md) | **选型综述**：Surface/Engine 两层、计算时机光谱、注入方式、外部开源方案对比、合成闭环缺口 |
 | [Agent 复利](agent-compound-interest.md) | | 持久化如何改变 AI 工具本质：memory/skill/cron 的累积效应、跨项目联动 |
 

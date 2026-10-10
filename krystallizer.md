@@ -54,7 +54,7 @@ Agent 按 `session_id` 取完整会话 → 执行 → 把新会话写回。循�
 
 **消解的缓存代价有界（供参考）**。前缀缓存是逐请求对最长公共前缀匹配的，不是逐会话整体匹配。把最后两条记录（tool_call + tool_result）消解成一条合并记录只改尾部；往前一百条字节不变、缓存照常命中。每轮损失限于被替换的尾部（几 KB 的重算），与分支剪枝同机制：追加 + 局部尾改，前缀保持稳定。「改写历史使缓存全量失效」是误解——改写点就是尾部。
 
-**Agent 四分**：入口（Prism）、循环（Gravity）、记忆面（Krystallizer）、执行触手（Probe）。循环收缩为：取会话 → 跑 turn → 存会话。完整架构见 [无状态 Agent 架构](stateless-agent-architecture.md)。
+**Agent 四分**：入口（Prism）、循环（Gravity）、记忆面（Krystallizer）、执行器（Effector）。循环收缩为：取会话 → 跑 turn → 存会话。完整架构见 [无状态 Agent 架构](stateless-agent-architecture.md)。
 
 **代价与转移**：
 
@@ -365,10 +365,11 @@ dsh 的会话模型与本系统的设计独立收敛到同一形态：append-onl
 - **压缩调用的缓存复用**：dsh 生成摘要时重放被压缩请求的前缀、在尾部追加压缩指令，使 provider 侧 KV cache 命中——与本系统旁路压缩的缓存收益相同（dsh 是独立压缩调用自带尾提示词，我们是与主分支并行分叉的旁路请求，前缀 KV 同源复用）。
 - **剪裁的结构对齐**：dsh 的保留单元是完整闭合的 step（工具调用 + 结果成对），切割点落在 step 中间就扩展到对齐，`compactRegion` 拒绝拆散工具对。compress_task 的截断边界应采用同一规则，取代固定条数。
 
-## 交叉引用## 交叉引用
+## 交叉引用
 
 - **[图谱化记忆](graph-memory.md)**：原子事实图的概念设计——计算时机光谱、聚簇策略、权重系统、图谱化 Skill。
+- **[图谱化记忆](graph-memory.md)**：冲突的读时消解——append-only 事实无写入冲突，逻辑冲突的裁决靠权重与主体归属，不靠写时去伪。
 - **[Agent 记忆选型](agent-memory.md)**：通用记忆选型分析——Surface/Engine 两层、注入方式、外部开源方案对比。
-- **[无状态 Agent 架构](stateless-agent-architecture.md)**：组件架构总纲——turn 模型、压缩并行旁路、Surface 架构语义、Prism/Gravity/Probe。
+- **[无状态 Agent 架构](stateless-agent-architecture.md)**：组件架构总纲——turn 模型、压缩并行旁路、Surface 架构语义、Prism/Gravity/Effector。
 - **[KV 存储引擎](kv-storage-engine.md)**：存储层承载——属性图编码模式、读改写消除、二级索引更新策略、WriteBatch 事务。
 - **[缓存树和尾提示词优化](tail-prompt-optimization.md)**：尾提示词的缓存旁路机制。
