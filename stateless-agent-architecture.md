@@ -1,5 +1,7 @@
 # 无状态 Agent 架构
 
+> **语言：** [English](stateless-agent-architecture-en.md)（主文档）· [中文](stateless-agent-architecture.md)
+
 *一套区别于传统 Agent 框架的架构：无状态、云原生、serverless。记忆设计（checkpoint、检索、提取）见 [Agent 记忆选型](agent-memory.md)，记忆系统实现见 [Krystallizer](krystallizer.md)，Aura 引擎本体见 [Aura 架构](aura-architecture.md)。*
 
 ## 核心命题：turn 是唯一执行单位

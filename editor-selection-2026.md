@@ -1,5 +1,6 @@
 # 编辑器选型分析：2026 深度技术报告
 
+> **语言：** [English](editor-selection-2026-en.md)（主文档）· [中文](editor-selection-2026.md)
 > **相关文档**：嵌入式脚本语言（Rune vs Steel）的技术深度对比见 [嵌入式脚本语言选型](embedded-script-languages.md)
 
 ## 一、Helix 的保守主义危机

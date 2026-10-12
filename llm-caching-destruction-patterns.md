@@ -219,4 +219,4 @@ Prefix Checkpoint 是尾提示词的推广——不是原地替换，是**并行
 | [LLM 基础认知与心智模型](llm-fundamentals.md) | 概率预测器 / 视野×速度 / 高维关键词匹配 / KV cache 树形结构 |
 | [缓存树和尾提示词优化](tail-prompt-optimization.md) | 缓存分支机制、压缩场景原地替换 |
 | [AI 编程批判](ai-programming-optimism-critique.md) | AI 编程的三重知识困境 |
-| [编程语言选型](language-selection.md) | Python 作为 AI 生成最优语言 |
+| [适合 LLM 编写的编程语言](llm-language-selection.md) | 生成者侧的语言判据：验证成本、逃生通道与治理 |

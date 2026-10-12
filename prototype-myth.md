@@ -1,5 +1,6 @@
 # 原型/快速开发迷思
 
+> **语言：** [English](prototype-myth-en.md)（主文档）· [中文](prototype-myth.md)
 > "先用 Python 快速验证，验证完再用 Rust 重写"——这个叙事的前提是错的。
 
 ---

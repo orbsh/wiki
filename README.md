@@ -7,9 +7,9 @@
 | 文档 | English | 内容 |
 |:--|:--|:--|
 | [图谱化记忆](graph-memory.md) | | **设计文档**：计算时机光谱、属性图定位、原子三元组、双层模型、聚簇策略、权重系统、编码场景 |
-| [无状态 Agent 架构](stateless-agent-architecture.md) | | **架构总纲**：turn 即执行单位、组件四分（Prism/Gravity/Krystallizer/Effector）、Surface 设计（注入与触发）、压缩并行旁路、skill 涌现闭环、传输裁决 |
+| [无状态 Agent 架构](stateless-agent-architecture.md) | [Stateless Agent Architecture](stateless-agent-architecture-en.md) | **架构总纲**：turn 即执行单位、组件四分（Prism/Gravity/Krystallizer/Effector）、Surface 设计（注入与触发）、压缩并行旁路、skill 涌现闭环、传输裁决 |
 | [Krystallizer](krystallizer.md) | | **实现设计**：会话控制原语（branch/tail/summarize）、full/assist 双模式、提取机制三方案、KDL 序列化、存储实现、skillforge 实现现状 |
-| [无状态 Agent 架构](stateless-agent-architecture.md) | | **架构设计**：turn 即执行单位、组件四分（Prism/Gravity/Krystallizer/Effector）、skill 涌现闭环、HTTP+SSE 传输裁决、与传统架构对照 |
+| [无状态 Agent 架构](stateless-agent-architecture.md) | [Stateless Agent Architecture](stateless-agent-architecture-en.md) | **架构设计**：turn 即执行单位、组件四分（Prism/Gravity/Krystallizer/Effector）、skill 涌现闭环、HTTP+SSE 传输裁决、与传统架构对照 |
 | [记忆选型](agent-memory.md) | [Memory Architecture](agent-memory-en.md) | **选型综述**：Surface/Engine 两层、计算时机光谱、注入方式、外部开源方案对比、合成闭环缺口 |
 | [Agent 复利](agent-compound-interest.md) | | 持久化如何改变 AI 工具本质：memory/skill/cron 的累积效应、跨项目联动 |
 
@@ -67,8 +67,8 @@
 | [Harbor 批判](harbor-critique.md) | | 企业膨胀、CNCF 政治 vs 工程现实 |
 | [阿里云批判](aliyun-critique.md) | | 阿里云的架构与商业问题 |
 | [AI 编程乐观批判](ai-programming-optimism-critique.md) | | AI 编程的能力边界 |
-| [Vim 运动批判](vim-movement-critique.md) | | Vim 运动模型的局限 |
-| [为什么不写注释](why-not-write-comments.md) | | 代码注释的反主流观点 |
+| [Vim 运动批判](vim-movement-critique.md) | [Vim Movement Logic Critique](vim-movement-critique-en.md) | Vim 运动模型的局限 |
+| [为什么不写注释](why-not-write-comments.md) | [Why You Shouldn't Write Comments](why-not-write-comments-en.md) | 代码注释的反主流观点 |
 
 ## 设计与语言
 
@@ -79,10 +79,13 @@
 | [Aura Fluxora DevOps](aura-fluxora-devops.md) | | Aura 与 Fluxora 的 DevOps 集成 |
 | [Flux 架构](flux-architecture.md) | | 响应式通信模式：从被动拉取到主动推送，Fluxora = Flux + Aura |
 | [WASM 统一运行时](wasm-unified-runtime.md) | | WebAssembly 统一运行时架构 |
-| [现代语言设计](modern-language-design.md) | | 语言设计趋势与分析 |
+| [现代语言设计](modern-language-design.md) | [Modern Language Design](modern-language-design-en.md) | 语言设计趋势与分析 |
+| [适合 LLM 编写的编程语言](llm-language-selection.md) | [Language Selection for LLM-Generated Code](llm-language-selection-en.md) | 生成者侧判据：验证成本、逃生通道与治理、按语言的评级 |
+| [编程语言选型](language-selection.md) | [Programming Language Selection](language-selection-en.md) | 人类侧：认知负荷、四象限领地、生态与工具链、被淘汰语言 |
+| [原型/快速开发迷思](prototype-myth.md) | [The Prototype / Rapid-Development Myth](prototype-myth-en.md) | 「先用 Python 验证再重写」的前提为何不成立：类型是契约，AI 改变类型成本 |
 | [ECS 实体组件系统](entity-component-system.md) | | ECS 三层模型、数据驱动收益、网/树拓扑定位、Bevy 0.19 实践 |
-| [Go, Zig 与反智主义](go-zig-anti-intellectualism.md) | | Go, Zig 与反智主义 |
-| [嵌入式脚本语言](embedded-script-languages.md) | | 嵌入式脚本语言选型 |
+| [Go, Zig 与反智主义](go-zig-anti-intellectualism.md) | [Go, Zig and Anti-Intellectualism](go-zig-anti-intellectualism-en.md) | Go, Zig 与反智主义 |
+| [嵌入式脚本语言](embedded-script-languages.md) | [Embedded Script Language Selection](embedded-script-languages-en.md) | 嵌入式脚本语言选型 |
 | [Lambda 到硅](lambda-to-silicon.md) | | 从 Lambda 演算到硅片的计算模型演进 |
 | [序列化协议分析对比](serialization-protocol-comparison.md) | | 序列化格式选型 |
 | [文档格式对比](document-format-comparison.md) | | Markdown 与下一代纯文本标记语言：按笔记/排版/出版用途分轴对比 Neorg、Org-mode、Typst、AsciiDoc |
@@ -119,7 +122,7 @@
 | 文档 | English | 内容 |
 |:--|:--|:--|
 | [Emacs 研究](emacs-research.md) | | Emacs 配置与使用 |
-| [编辑器选型 2026](editor-selection-2026.md) | | 编辑器选型对比 |
+| [编辑器选型 2026](editor-selection-2026.md) | [Editor Selection Analysis](editor-selection-2026-en.md) | 编辑器选型对比 |
 | [区块编辑器架构](block-editor-architecture.md) | | 区块编辑器设计 |
 | [Linux 桌面工作流](linux-desktop-workflow.md) | | 平铺 WM 到 COSMIC DE 的架构选择：外层堆叠+内层平铺、Nushell+Pop-Launcher 数据流 |
 | [Linux SSD 优化](linux-ssd-optimization.md) | | SSD 性能优化 |

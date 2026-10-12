@@ -1,5 +1,6 @@
 # 为什么不应该写注释
 
+> **语言：** [English](why-not-write-comments-en.md)（主文档）· [中文](why-not-write-comments.md)
 > 注释会说谎，因为保持同步的成本太高，而没有任何机制强制同步。消除同步的需求，比维护注释更有效。
 
 ---

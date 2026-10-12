@@ -1,5 +1,6 @@
 # 嵌入式脚本语言选型：Rune vs Steel 深度技术报告
 
+> **语言：** [English](embedded-script-languages-en.md)（主文档）· [中文](embedded-script-languages.md)
 > **上层框架**：本文是「程序（内嵌）」这一扩展范式的语言级深化——它只讨论内嵌语谱系（通用脚本 / 受限 DSL / 编译产物 WASM），不涉及「地址（RPC） vs 程序（内嵌）」的方法论，后者见 [aura-architecture](aura-architecture.md) §0「扩展单元：地址 vs 程序」。
 
 

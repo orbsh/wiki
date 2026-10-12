@@ -1,5 +1,7 @@
 # Zig 与反智主义
 
+> **语言：** [English](go-zig-anti-intellectualism-en.md)（主文档）· [中文](go-zig-anti-intellectualism.md)
+
 ## 一、Rust 复杂性的必然性与合理性
 
 ### 不可能三角与唯一数学解

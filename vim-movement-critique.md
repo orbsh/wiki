@@ -1,5 +1,6 @@
 # Vim 移动逻辑批判与现代输入范式
 
+> **语言：** [English](vim-movement-critique-en.md)（主文档）· [中文](vim-movement-critique.md)
 > 从历史遗留、生物力学、现代代码语境三个维度对 Vim 传统移动教条的祛魅，以及 Colemak + 小鹤双拼 + Neovim 现代插件构成的新范式。
 
 ---
