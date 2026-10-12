@@ -1,5 +1,7 @@
 # Krystallizer — Agent 记忆核心
 
+> **语言：** [English](krystallizer-en.md)（主文档）· [中文](krystallizer.md)
+
 *会话控制 + 原子事实图 + 混合检索的嵌入式记忆系统：机制与实现设计。属性图的概念定位见 [图谱化记忆](graph-memory.md)，通用记忆选型分析见 [Agent 记忆选型](agent-memory.md)，Surface 架构语义见 [无状态 Agent 架构](stateless-agent-architecture.md)。*
 
 Krystallizer 是从 skillforge `src/mem` 独立出来的记忆系统，落在 [KV 存储引擎](kv-storage-engine.md)架构上：会话控制原语（branch / tail / summarize）、原子事实图（append-only KDL 事实 + 权重）、自建混合检索（arroy 向量 + 手写 BM25 + RRF）。嵌入式 Rust 核心（mem-core）+ Python 绑定（PyO3），零 LLM 依赖、零传输依赖。

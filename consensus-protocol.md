@@ -1,5 +1,7 @@
 # 共识协议：Raft 的本质、边界与正确用途
 
+> **语言：** [English](consensus-protocol-en.md)（主文档）· [中文](consensus-protocol.md)
+
 **Status:** 初始版本
 **核心论点：** Raft 是元数据共识协议（metadata consensus），不是数据存储协议。将其用于批量数据存储是范畴错误。
 **架构上下文：** [KV 存储引擎](kv-storage-engine.md) — 双引擎模式中 Raft 的角色定位

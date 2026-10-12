@@ -1,5 +1,6 @@
 # ECS 实体组件系统（以 Bevy 为例）
 
+> **语言：** [English](entity-component-system-en.md)（主文档）· [中文](entity-component-system.md)
 > 2026-08-12 创建
 
 ## 范式差异：ECS 相对 OO 是标签，不是树

@@ -1,5 +1,7 @@
 # 序列化协议分析对比：IDL vs Code-First
 
+> **语言：** [English](serialization-protocol-comparison-en.md)（主文档）· [中文](serialization-protocol-comparison.md)
+
 **性质**：多方案分析对比（非单一决策）
 **核心哲学**：技术不应该是束缚开发者手脚的繁文缛节
 

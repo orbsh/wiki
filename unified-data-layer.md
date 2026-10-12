@@ -1,5 +1,7 @@
 # 统一数据层架构：探索走 PostgreSQL，规模化走 KV + Iceberg + DuckDB
 
+> **语言：** [English](unified-data-layer-en.md)（主文档）· [中文](unified-data-layer.md)
+
 **结论**：数据栈不是一套通用的东西，而是按**项目属性**分成两条路径——**探索 / 敏捷型**直接无脑用 PostgreSQL；**规模化 / 可预测型**收敛到 **KV + Iceberg + DuckDB**。分叉的判断轴是「需求可预测性 × 时间尺度 × 负载重量（规模）」，负载分层（OLTP/OLAP）只是路径 B 内部的组织方式，不是全局唯一答案。
 
 ## 判据：两条路径的分叉轴

@@ -1,5 +1,7 @@
 # 图谱化记忆
 
+> **语言：** [English](graph-memory-en.md)（主文档）· [中文](graph-memory.md)
+
 *记忆架构的计算时机光谱，以及属性图在 Agent 记忆系统中的定位。*
 
 ## 计算时机光谱

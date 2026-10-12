@@ -1,5 +1,7 @@
 # LLM 过度思考批判
 
+> **语言：** [English](llm-overthinking-critique-en.md)（主文档）· [中文](llm-overthinking-critique.md)
+
 **状态**：团队技术共识
 **日期**：2026-06-22
 **核心命题**：面向 Benchmark 的深度推理优化与真实软件工程需求存在根本性错配——跑分越高，干活越差

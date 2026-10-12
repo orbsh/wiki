@@ -1,5 +1,7 @@
 # HelixDB vs LanceDB：对象存储 AI 数据栈的两种路线
 
+> **语言：** [English](helixdb-vs-lancedb-en.md)（主文档）· [中文](helixdb-vs-lancedb.md)
+
 **状态**：调研分析
 **日期**：2026-08-14
 **核心问题**：同属"对象存储 + Arrow"的 AI 数据栈，HelixDB 与 LanceDB 选择了几乎相反的实现路线——一个走图向量服务 + 专有 DSL，一个走嵌入式多模态检索引擎 + 向量/全文/SQL。本文将二者逐维度对账，并结合既有文档的立场（反专有语法、反 open-core 功能裁剪、对象存储原生）给出取舍判断。

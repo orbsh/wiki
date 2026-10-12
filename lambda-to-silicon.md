@@ -1,5 +1,7 @@
 # Lambda to Silicon — 高级语义向低级架构的降维映射
 
+> **语言：** [English](lambda-to-silicon-en.md)（主文档）· [中文](lambda-to-silicon.md)
+
 从 λ 演算到 C++/Rust IR 再到 CPU 硬件，编译器每一层都在做"抽象→具体"的降维。本文记录这条链路上的关键技术和工程取舍。
 
 ---

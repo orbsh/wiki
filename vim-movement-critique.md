@@ -285,4 +285,4 @@ noremap i l    " 右（主行右）
 
 ---
 
-> **延伸阅读**：键位**修饰键**（CapsLock→esc/Ctrl、shift 还原、括号不设快捷键）的重映射实现见 [keyboard-keymap-design.md](keyboard-keymap-design.md)。本文聚焦移动键与范式，不重复修饰键内容。
+> **延伸阅读**：键位**修饰键**（CapsLock→esc/Ctrl、shift 还原、括号不设快捷键）的重映射实现见 [键盘键位重映射设计](keyboard-keymap-design.md)。本文聚焦移动键与范式，不重复修饰键内容。

@@ -1,5 +1,7 @@
 # Redis："网络 RAM"陷阱
 
+> **语言：** [English](redis-critique-en.md)（主文档）· [中文](redis-critique.md)
+
 **结论**：新架构中拒绝使用。
 **状态**：针对旧语言（PHP/Java）根本性设计缺陷和硬件限制的"补丁式"解决方案。
 

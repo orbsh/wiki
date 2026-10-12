@@ -6,9 +6,9 @@
 
 | 文档 | English | 内容 |
 |:--|:--|:--|
-| [图谱化记忆](graph-memory.md) | | **设计文档**：计算时机光谱、属性图定位、原子三元组、双层模型、聚簇策略、权重系统、编码场景 |
+| [图谱化记忆](graph-memory.md) | [Graph Memory](graph-memory-en.md) | **设计文档**：计算时机光谱、属性图定位、原子三元组、双层模型、聚簇策略、权重系统、编码场景 |
 | [无状态 Agent 架构](stateless-agent-architecture.md) | [Stateless Agent Architecture](stateless-agent-architecture-en.md) | **架构总纲**：turn 即执行单位、组件四分（Prism/Gravity/Krystallizer/Effector）、Surface 设计（注入与触发）、压缩并行旁路、skill 涌现闭环、传输裁决 |
-| [Krystallizer](krystallizer.md) | | **实现设计**：会话控制原语（branch/tail/summarize）、full/assist 双模式、提取机制三方案、KDL 序列化、存储实现、skillforge 实现现状 |
+| [Krystallizer](krystallizer.md) | [Krystallizer](krystallizer-en.md) | **实现设计**：会话控制原语（branch/tail/summarize）、full/assist 双模式、提取机制三方案、KDL 序列化、存储实现、skillforge 实现现状 |
 | [无状态 Agent 架构](stateless-agent-architecture.md) | [Stateless Agent Architecture](stateless-agent-architecture-en.md) | **架构设计**：turn 即执行单位、组件四分（Prism/Gravity/Krystallizer/Effector）、skill 涌现闭环、HTTP+SSE 传输裁决、与传统架构对照 |
 | [记忆选型](agent-memory.md) | [Memory Architecture](agent-memory-en.md) | **选型综述**：Surface/Engine 两层、计算时机光谱、注入方式、外部开源方案对比、合成闭环缺口 |
 | [Agent 复利](agent-compound-interest.md) | | 持久化如何改变 AI 工具本质：memory/skill/cron 的累积效应、跨项目联动 |
@@ -31,7 +31,7 @@
 | 文档 | English | 内容 |
 |:--|:--|:--|
 | [LLM 基础](llm-fundamentals.md) | | 训练涌现智能、三层局限、认知框架 |
-| [LLM 过度思考批判](llm-overthinking-critique.md) | | 表演拟人 vs 真正推理、草稿本纠偏 |
+| [LLM 过度思考批判](llm-overthinking-critique.md) | [LLM Overthinking Critique](llm-overthinking-critique-en.md) | 表演拟人 vs 真正推理、草稿本纠偏 |
 | [LLM 缓存破坏模式](llm-caching-destruction-patterns.md) | | Prompt Caching 生效条件、前缀稳定性、IDE/Agent 场景的缓存杀手 |
 | [LLM 隐藏行为模式](llm-hidden-behavior-patterns.md) | | 模型未显式表达但影响输出的行为模式 |
 | [缓存树和尾提示词优化](tail-prompt-optimization.md) | [Tail Prompt Optimization](tail-prompt-optimization-en.md) | 上下文缓存旁路分支机制，用于压缩/汇总/提取 |
@@ -43,10 +43,10 @@
 |:--|:--|:--|
 | [AI 友好基础设施](ai-friendly-infrastructure.md) | | 声明式 OS、全链路排查、NixOS 为何最适合 AI |
 | [架构选择](architecture-choices.md) | | 网关选择、仓库策略（Zot+WG）、Redis/数据库批判 |
-| [统一数据层](unified-data-layer.md) | | SurrealDB 多模型引擎、SurrealQL 人体工程学、与 PG 的分层选型 |
+| [统一数据层](unified-data-layer.md) | [Unified Data Layer](unified-data-layer-en.md) | SurrealDB 多模型引擎、SurrealQL 人体工程学、与 PG 的分层选型 |
 | [湖仓研究](lakehouse-research.md) | | Iceberg/LanceDB/Delta Lake 选型 |
-| [HelixDB vs LanceDB](helixdb-vs-lancedb.md) | | 对象存储上 AI 数据栈的两种路线对比 |
-| [Aura 架构 §5](aura-architecture.md) | | Fjall + 独立元数据（单写无共识）分布式存算一体 |
+| [HelixDB vs LanceDB](helixdb-vs-lancedb.md) | [HelixDB vs LanceDB](helixdb-vs-lancedb-en.md) | 对象存储上 AI 数据栈的两种路线对比 |
+| [Aura 架构 §5](aura-architecture.md) | [Aura Architecture](aura-architecture-en.md) | Fjall + 独立元数据（单写无共识）分布式存算一体 |
 | [Arrow HTAP 引擎](arrow-unified-htap-engine.md) | | Arrow 统一 HTAP 引擎设计 |
 | [文件系统方案](filesystem-solution.md) | | 文件系统选型 |
 | [拥塞控制设计](congestion-control-design.md) | | 网络拥塞控制 |
@@ -56,7 +56,7 @@
 
 | 文档 | English | 内容 |
 |:--|:--|:--|
-| [Redis 批判](redis-critique.md) | | 网络延迟陷阱、单线程瓶颈、内存浪费 |
+| [Redis 批判](redis-critique.md) | [Redis: the "Network RAM" Trap](redis-critique-en.md) | 网络延迟陷阱、单线程瓶颈、内存浪费 |
 | [高并发批判](high-concurrency-critique.md) | | 「高并发」作为简中特有话语的解剖：词汇量纲缺失、面试循环繁殖、fpm 防御性焦虑 |
 | [0→1 话语批判](innovation-discourse-critique.md) | | 「0→1 / 1→100」话术的解剖：用跨度冒充高度、应用遥遥领先的证伪、市场对创新课税、体量≠能力、应用工程≠计算机科学、可替代性判据 |
 | [Nginx 批判](nginx-critique.md) | | 为何 Nginx 过时：多进程低效、静态配置、Lua 复杂性 |
@@ -74,23 +74,23 @@
 
 | 文档 | English | 内容 |
 |:--|:--|:--|
-| [Aura 架构](aura-architecture.md) | | Event Realm、摊位、事件组合原语、interface_schema |
+| [Aura 架构](aura-architecture.md) | [Aura Architecture](aura-architecture-en.md) | Event Realm、摊位、事件组合原语、interface_schema |
 | [长连接工程挑战](long-lived-connection-engineering.md) | | WS/WT 长连接的物理限制（背压、碎片化、连接倾斜）与解法 |
 | [Aura Fluxora DevOps](aura-fluxora-devops.md) | | Aura 与 Fluxora 的 DevOps 集成 |
 | [Flux 架构](flux-architecture.md) | | 响应式通信模式：从被动拉取到主动推送，Fluxora = Flux + Aura |
-| [WASM 统一运行时](wasm-unified-runtime.md) | | WebAssembly 统一运行时架构 |
+| [WASM 统一运行时](wasm-unified-runtime.md) | [WASM Unified Runtime](wasm-unified-runtime-en.md) | WebAssembly 统一运行时架构 |
 | [现代语言设计](modern-language-design.md) | [Modern Language Design](modern-language-design-en.md) | 语言设计趋势与分析 |
 | [适合 LLM 编写的编程语言](llm-language-selection.md) | [Language Selection for LLM-Generated Code](llm-language-selection-en.md) | 生成者侧判据：验证成本、逃生通道与治理、按语言的评级 |
 | [编程语言选型](language-selection.md) | [Programming Language Selection](language-selection-en.md) | 人类侧：认知负荷、四象限领地、生态与工具链、被淘汰语言 |
 | [原型/快速开发迷思](prototype-myth.md) | [The Prototype / Rapid-Development Myth](prototype-myth-en.md) | 「先用 Python 验证再重写」的前提为何不成立：类型是契约，AI 改变类型成本 |
-| [ECS 实体组件系统](entity-component-system.md) | | ECS 三层模型、数据驱动收益、网/树拓扑定位、Bevy 0.19 实践 |
+| [ECS 实体组件系统](entity-component-system.md) | [Entity-Component-System (ECS)](entity-component-system-en.md) | ECS 三层模型、数据驱动收益、网/树拓扑定位、Bevy 0.19 实践 |
 | [Go, Zig 与反智主义](go-zig-anti-intellectualism.md) | [Go, Zig and Anti-Intellectualism](go-zig-anti-intellectualism-en.md) | Go, Zig 与反智主义 |
 | [嵌入式脚本语言](embedded-script-languages.md) | [Embedded Script Language Selection](embedded-script-languages-en.md) | 嵌入式脚本语言选型 |
-| [Lambda 到硅](lambda-to-silicon.md) | | 从 Lambda 演算到硅片的计算模型演进 |
-| [序列化协议分析对比](serialization-protocol-comparison.md) | | 序列化格式选型 |
+| [Lambda 到硅](lambda-to-silicon.md) | [Lambda to Silicon](lambda-to-silicon-en.md) | 从 Lambda 演算到硅片的计算模型演进 |
+| [序列化协议分析对比](serialization-protocol-comparison.md) | [Serialization Protocol Comparison](serialization-protocol-comparison-en.md) | 序列化格式选型 |
 | [文档格式对比](document-format-comparison.md) | | Markdown 与下一代纯文本标记语言：按笔记/排版/出版用途分轴对比 Neorg、Org-mode、Typst、AsciiDoc |
 | [KDL vs 配置格式](kdl-vs-config-formats.md) | | 语义树 vs 数据网络：KDL 节点模式与 TOML/YAML/JSON/HTML 全景对比、工程坑点；KDL 作为配置生成中间层的复用价值 |
-| [标签森林](tag-forest.md) | | 多棵树互斥维度组成的内容组织：situation/importance·urgency 评分树、隔离实例、邻接表+递归CTE查询 |
+| [标签森林](tag-forest.md) | [Tag Forest](tag-forest-en.md) | 多棵树互斥维度组成的内容组织：situation/importance·urgency 评分树、隔离实例、邻接表+递归CTE查询 |
 
 ## 工作流与技能
 
@@ -131,6 +131,7 @@
 | [无状态认证选型](stateless-auth-selection.md) | | 无状态认证方案 |
 | [Gateway API 迁移](gateway-api-migration.md) | | Istio 到 Envoy HTTPRoute 迁移 |
 | [浏览器键盘模式](keyboard-wm-browser-mode.md) | | Niri + chromium --app + CDP 的全键盘浏览器模式：信息流精炼定位、tag 森林组织、mudra 底座 |
+| [键盘键位重映射设计](keyboard-keymap-design.md) | [Keyboard Keymap Design](keyboard-keymap-design-en.md) | 修饰键重映射：evdev vs XKB、kanata 的取舍与配置 |
 
 ## 其他
 
@@ -167,6 +168,6 @@
 | [部署 CI](projects/deployment-ci.md) | | Helm 部署与 CI 数据配置 |
 | [RisingWave CDC](projects/risingwave-cdc.md) | | RisingWave CDC 方案 |
 | [KV 存储引擎架构](kv-storage-engine.md) | [KV Storage Engine](kv-storage-engine-en.md) | 嵌入式 KV 架构设计、复合键编码与用例 |
-| [共识协议](consensus-protocol.md) | | Raft 共识协议的本质、边界与正确用途：元数据共识 vs 数据存储 |
+| [共识协议](consensus-protocol.md) | [Consensus Protocol](consensus-protocol-en.md) | Raft 共识协议的本质、边界与正确用途：元数据共识 vs 数据存储 |
 | [分布式协作拓扑](distributed-collaboration-topology.md) | | 拓扑/信任边界与一致性算法的正交选择：单体红利、大节点联邦、TCC 柔性事务、CRDT 主权分界 |
 | [OKM：Object-Keyspace Mapping](https://github.com/orbsh/okm) | | 对标 ORM 的 KV 键空间映射过程宏（文档已并入项目仓库） |

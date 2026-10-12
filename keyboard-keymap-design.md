@@ -1,6 +1,7 @@
 # 键盘键位重映射设计
 
-> 与 [vim-movement-critique.md](vim-movement-critique.md)（移动键/范式批判）互补：本文聚焦**修饰键**的重映射实现，记录在 evdev 层用 kanata 做键位重映射的设计决策与完整配置。决策档案见 NixOS `docs/adr/019-keyboard-keymap-design.md`（evdev/XKB 取舍、shift/括号还原）与 `docs/adr/021-keyboard-ctrlcaps-swap.md`（caps=Ctrl 纯交换，取代 019 的 esc 双模）。
+> **语言：** [English](keyboard-keymap-design-en.md)（主文档）· [中文](keyboard-keymap-design.md)
+> 与 [Vim 移动逻辑批判](vim-movement-critique.md)（移动键/范式批判）互补：本文聚焦**修饰键**的重映射实现，记录在 evdev 层用 kanata 做键位重映射的设计决策与完整配置。决策档案见 NixOS `docs/adr/019-keyboard-keymap-design.md`（evdev/XKB 取舍、shift/括号还原）与 `docs/adr/021-keyboard-ctrlcaps-swap.md`（caps=Ctrl 纯交换，取代 019 的 esc 双模）。
 
 ---
 

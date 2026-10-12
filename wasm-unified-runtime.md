@@ -1,5 +1,7 @@
 # Wasm 统一运行时：从编译目标到通用后端
 
+> **语言：** [English](wasm-unified-runtime-en.md)（主文档）· [中文](wasm-unified-runtime.md)
+
 **核心命题**：Wasm 长期被视为"第三方插件沙箱"——Rust/C++ 编译产物在隔离环境中运行。但 Wasm 正在从编译目标演变为通用语言后端。这个过程分两步：无 GC 语言（Rust/Go）现在已经能编译到 Wasm 运行；wasm-gc 落地后，需要 GC 的语言（Python/Kotlin/Swift 等）也能顺畅运行，统一运行时才真正成立。
 
 ## 双重身份：编译目标 vs 运行时
