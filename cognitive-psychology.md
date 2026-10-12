@@ -1,5 +1,7 @@
 # 认知心理学与个人成长
 
+> **语言：** [English](cognitive-psychology-en.md)（主文档）· [中文](cognitive-psychology.md)
+
 *自我驱动、习惯养成和认知成长的原则。*
 
 ## 自驱力的起源

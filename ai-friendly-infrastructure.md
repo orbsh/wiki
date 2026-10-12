@@ -1,5 +1,7 @@
 # AI 友好基础设施：什么环境让 Agent 最有效率
 
+> **语言：** [English](ai-friendly-infrastructure-en.md)（主文档）· [中文](ai-friendly-infrastructure.md)
+
 **结论**：AI agent 的效率不只取决于模型能力，更取决于它能感知和操作的环境。声明式、显式、文本化的基础设施是 AI 的天然土壤。
 
 ## 核心原则：AI 需要显式状态

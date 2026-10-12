@@ -1,5 +1,7 @@
 # Flex UI 的 CSS 方案：变量即协议 + Trait 组合
 
+> **语言：** [English](flex-ui-css-en.md)（主文档）· [中文](flex-ui-css.md)
+
 ## 定位
 
 Flex UI 的样式层是一套**零 CSS 框架**的自有方案,从 fluxora 分离独立成仓库

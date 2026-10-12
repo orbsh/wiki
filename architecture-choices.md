@@ -1,5 +1,7 @@
 # 架构选择与批判
 
+> **语言：** [English](architecture-choices-en.md)（主文档）· [中文](architecture-choices.md)
+
 ## 容器网关
 
 **核心哲学**：云原生网关必须是动态的、解耦的、协议无关的。基于 Nginx 的"硬编码"是遗留的，被拒绝。

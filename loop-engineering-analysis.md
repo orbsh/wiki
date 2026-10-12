@@ -1,5 +1,7 @@
 # 循环工程（Loop Engineering）分析
 
+> **语言：** [English](loop-engineering-analysis-en.md)（主文档）· [中文](loop-engineering-analysis.md)
+
 **状态**：分析完成
 **日期**：2026-06-23
 **来源**：对 Addy Osmani（2026-06-07）canonical essay 的批判性评估

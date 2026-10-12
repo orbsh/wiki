@@ -35,14 +35,14 @@
 | [LLM 缓存破坏模式](llm-caching-destruction-patterns.md) | [LLM Caching Destruction Patterns](llm-caching-destruction-patterns-en.md) | Prompt Caching 生效条件、前缀稳定性、IDE/Agent 场景的缓存杀手 |
 | [LLM 隐藏行为模式](llm-hidden-behavior-patterns.md) | [LLM Hidden Behavior Patterns](llm-hidden-behavior-patterns-en.md) | 模型未显式表达但影响输出的行为模式 |
 | [缓存树和尾提示词优化](tail-prompt-optimization.md) | [Tail Prompt Optimization](tail-prompt-optimization-en.md) | 上下文缓存旁路分支机制，用于压缩/汇总/提取 |
-| [认知心理学](cognitive-psychology.md) | | 认知科学框架在 AI Agent 设计中的应用 |
+| [认知心理学](cognitive-psychology.md) | [Cognitive Psychology](cognitive-psychology-en.md) | 认知科学框架在 AI Agent 设计中的应用 |
 
 ## 架构与基础设施
 
 | 文档 | English | 内容 |
 |:--|:--|:--|
-| [AI 友好基础设施](ai-friendly-infrastructure.md) | | 声明式 OS、全链路排查、NixOS 为何最适合 AI |
-| [架构选择](architecture-choices.md) | | 网关选择、仓库策略（Zot+WG）、Redis/数据库批判 |
+| [AI 友好基础设施](ai-friendly-infrastructure.md) | [AI-Friendly Infrastructure](ai-friendly-infrastructure-en.md) | 声明式 OS、全链路排查、NixOS 为何最适合 AI |
+| [架构选择](architecture-choices.md) | [Architecture Choices](architecture-choices-en.md) | 网关选择、仓库策略（Zot+WG）、Redis/数据库批判 |
 | [统一数据层](unified-data-layer.md) | [Unified Data Layer](unified-data-layer-en.md) | SurrealDB 多模型引擎、SurrealQL 人体工程学、与 PG 的分层选型 |
 | [SQL/PGQ 属性图查询](property-graph-queries.md) | [Property Graph Queries](property-graph-queries-en.md) | 在表上声明图、一图多关系、跨图查询、权限可达性、与图数据库/递归 CTE 的关系 |
 | [SurrealDB 评估档案](query-language-design.md) | [Query Language Design](query-language-design-en.md) | SurrealDB 评估档案：SQL 的根本性缺陷、SurrealQL 的架构级解法、挑战者逻辑 |
@@ -67,7 +67,7 @@
 | [MCP 批判](mcp-critique.md) | [MCP Over-Engineering](mcp-critique-en.md) | MCP 协议的政治性妥协与工程代价 |
 | [Dify 批判](dify-critique.md) | [Dify Critique](dify-critique-en.md) | AI 应用领域的 Harbor 复制品：低代码 vs AI 范式矛盾 |
 | [Harbor 批判](harbor-critique.md) | [Harbor Critique](harbor-critique-en.md) | 企业膨胀、CNCF 政治 vs 工程现实 |
-| [阿里云批判](aliyun-critique.md) | | 阿里云的架构与商业问题 |
+| [阿里云批判](aliyun-critique.md) | [Aliyun Critique](aliyun-critique-en.md) | 阿里云的架构与商业问题 |
 | [AI 编程乐观批判](ai-programming-optimism-critique.md) | [AI Programming Optimism Critique](ai-programming-optimism-critique-en.md) | AI 编程的能力边界 |
 | [Vim 运动批判](vim-movement-critique.md) | [Vim Movement Logic Critique](vim-movement-critique-en.md) | Vim 运动模型的局限 |
 | [为什么不写注释](why-not-write-comments.md) | [Why You Shouldn't Write Comments](why-not-write-comments-en.md) | 代码注释的反主流观点 |
@@ -99,11 +99,11 @@
 
 | 文档 | English | 内容 |
 |:--|:--|:--|
-| [自动化 Skill 工作流](automation-skill-workflow.md) | | 浏览器操作→可复用 Hermes Skill 的逆向工程 |
+| [自动化 Skill 工作流](automation-skill-workflow.md) | [Automation Skill Workflow](automation-skill-workflow-en.md) | 浏览器操作→可复用 Hermes Skill 的逆向工程 |
 | [NL2SQL 架构](nl2sql-architecture.md) | | OLTP 上做分析是架构设计错误：批判性分析 + 技能实现 |
 | [Nushell 介绍](nushell-introduction.md) | | Nushell 入门 |
-| [Loop 工程分析](loop-engineering-analysis.md) | | Loop 工程方法论框架 |
-| [迭代闭环](iteration-closed-loop.md) | | 行动、复盘、转向：迭代闭环的结构骨架、心理阻塞与元能力 |
+| [Loop 工程分析](loop-engineering-analysis.md) | [Loop Engineering Analysis](loop-engineering-analysis-en.md) | Loop 工程方法论框架 |
+| [迭代闭环](iteration-closed-loop.md) | [Iteration Closed Loop](iteration-closed-loop-en.md) | 行动、复盘、转向：迭代闭环的结构骨架、心理阻塞与元能力 |
 | [信息流精炼](infoflow-refinement.md) | | 信息流管道捕获→属性化→精炼→消费：NB 评分·标题党一致性检测、html→md·链接挖掘、RSS、聚合摘要/态势感知 |
 | [任务管理架构](task-management.md) | [Task Management](task-management-en.md) | scratch 任务模型（结构化 = 树形 = 脑图）、与 neorg 对比、改进计划与 agent 集成模式 |
 
@@ -145,7 +145,7 @@
 |:--|:--|:--|
 | [Fractal](Fractal.md) | | 核心自包含文档 |
 | [技术哲学](tech-philosophy.md) | | 应试工程 vs 范式转移 |
-| [职场沟通](workplace-communication.md) | | 职场沟通方法 |
+| [职场沟通](workplace-communication.md) | [Workplace Communication](workplace-communication-en.md) | 职场沟通方法 |
 | [坐姿工作范式](seated-work-paradigm.md) | | 坐姿与工作方式 |
 | [工程思维与工程素养](engineering-mindset-and-competence.md) | | 工程师双核心能力：认知决策模型（思维）与职业行为规范（素养） |
 | [可视化迷思](visual-myth.md) | [The Myth of Visualization](visual-myth-en.md) | 可视化形式的结构性批判 |
@@ -168,10 +168,11 @@
 | [项目索引](projects/) | | 项目特定文档目录 |
 | [Fluxora 架构](projects/fluxora-architecture.md) | [Fluxora Architecture](projects/fluxora-architecture-en.md) | AI-native UI 框架完整架构 |
 | [Flex UI](flex-ui.md) | [Flex UI](flex-ui-en.md) | 传输 UI 的事件驱动声明式框架：UI 作为数据结构、Accrete DSL、Bind 系统、封闭组件集的取舍 |
+| [Flex UI 的 CSS 方案](flex-ui-css.md) | [Flex UI CSS](flex-ui-css-en.md) | 变量即协议 + Trait 组合：从 fluxora 分离的设计史、现代 CSS 的三个能力、与 Flex UI 的关系 |
 | [Fluxora 决策](projects/fluxora-decisions.md) | | Fluxora ADR |
-| [NixOS 配置](projects/nixos-config.md) | | NixOS 主机配置与模块结构 |
+| [NixOS 配置](projects/nixos-config.md) | [NixOS Configuration](projects/nixos-config-en.md) | NixOS 主机配置与模块结构 |
 | [SkillForge](projects/skillforge.md) | | 多引擎 Agent 框架 |
-| [知识库](projects/knowledge-base.md) | | SurrealDB RAG 架构 |
+| [知识库](projects/knowledge-base.md) | [Knowledge Base](projects/knowledge-base-en.md) | SurrealDB RAG 架构 |
 | [部署 CI](projects/deployment-ci.md) | | Helm 部署与 CI 数据配置 |
 | [RisingWave CDC](projects/risingwave-cdc.md) | | RisingWave CDC 方案 |
 | [KV 存储引擎架构](kv-storage-engine.md) | [KV Storage Engine](kv-storage-engine-en.md) | 嵌入式 KV 架构设计、复合键编码与用例 |

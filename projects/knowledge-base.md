@@ -1,5 +1,7 @@
 # Knowledge Base (SurrealDB RAG)
 
+> **语言：** [English](knowledge-base-en.md)（主文档）· [中文](knowledge-base.md)
+
 ## Architecture Decisions
 
 ### ADR-005: 使用 SurrealDB 内置 HTTP 函数调用外部 API

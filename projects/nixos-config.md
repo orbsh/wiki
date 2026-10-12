@@ -1,5 +1,7 @@
 # NixOS 配置
 
+> **语言：** [English](nixos-config-en.md)（主文档）· [中文](nixos-config.md)
+
 **路径**：`~/Configuration/nixos`（NixOS 26 / unstable，基于 flake）
 
 ## 主机

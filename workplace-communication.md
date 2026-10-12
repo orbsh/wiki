@@ -1,5 +1,6 @@
 # 职场沟通：IM、邮件与 AI 主持人
 
+> **语言：** [English](workplace-communication-en.md)（主文档）· [中文](workplace-communication.md)
 > 2026-06-29 创建
 
 **核心观点**：IM 的本质问题是把异步沟通同步化，要求所有人实时在场，本质上是一种低效的会议。沟通效率不取决于工具，而取决于信息组织质量——减少 RTT（round-trip time），一次给够信息，减少仪式和表演。决策层需要深度思考，执行层由 AI 完成。

@@ -1,5 +1,7 @@
 # 操作自动化转 Skill 工作流
 
+> **语言：** [English](automation-skill-workflow-en.md)（主文档）· [中文](automation-skill-workflow.md)
+
 ## 核心理念
 
 将遗留系统的浏览器操作转化为可复用、可定时执行的 Hermes Skill。不是"写脚本"，是**逆向工程**一个没有 API 文档的系统，将其转化为可脚本化、可调度的接口。

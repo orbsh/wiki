@@ -1,5 +1,7 @@
 # 阿里云批判：云原生时代的战略误判
 
+> **语言：** [English](aliyun-critique-en.md)（主文档）· [中文](aliyun-critique.md)
+
 ## 1. 范式转变：存储即数据库
 
 ### 过去：对象存储作为"网络硬盘"
