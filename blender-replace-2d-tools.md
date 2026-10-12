@@ -1,5 +1,6 @@
 # 3D 工具能否替代 2D 工具
 
+> **语言：** [English](blender-replace-2d-tools-en.md)（主文档）· [中文](blender-replace-2d-tools.md)
 > 2026-08-06 创建
 
 ## 核心论点

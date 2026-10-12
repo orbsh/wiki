@@ -1,5 +1,6 @@
 # AI 时代商业模式
 
+> **语言：** [English](ai-era-business-models-en.md)（主文档）· [中文](ai-era-business-models.md)
 > 2026-06-27 创建
 
 ## 核心转变：价值锚点从交付物移到判断力

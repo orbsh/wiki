@@ -112,12 +112,14 @@
 | 文档 | English | 内容 |
 |:--|:--|:--|
 | [AI 时代组织](ai-era-organization-individual.md) | [AI Era Organization and Individual](ai-era-organization-individual-en.md) | 约束-解分析方法论、联邦化、个体崛起 |
-| [AI 时代商业模式](ai-era-business-models.md) | | AI 对商业模式的重塑 |
+| [AI 时代商业模式](ai-era-business-models.md) | [AI Era Business Models](ai-era-business-models-en.md) | AI 对商业模式的重塑 |
+| [风口的三种姿态](windfall-arbitrage.md) | [Windfall Arbitrage](windfall-arbitrage-en.md) | 渠道控制者 / 有准备的人 / 投机者三种姿态与对比：复利资产的差异 |
 | [市场形态全谱系](market-form-spectrum.md) | | 服务/产品/创作者/资产/投机/中介六形态与个人适配、认知操作系统轴、天赋勘探提示词 |
 | [AI 流动性](ai-liquidity-camp.md) | [AI Liquidity Camp](ai-liquidity-camp-en.md) | AI 时代的流动性分析 |
-| [Karpathy AI 编码方法论](karpathy-ai-coding-methodology.md) | | Karpathy 的 AI 编码实践 |
+| [Karpathy AI 编码方法论](karpathy-ai-coding-methodology.md) | [Karpathy AI Coding Methodology](karpathy-ai-coding-methodology-en.md) | Karpathy 的 AI 编码实践 |
 | [国内 AI 产业制度性缺陷](ai-industry-institutional-critique.md) | | 蒸馏/刷分现象、评审体制逆向选择、自由市场 vs 国家主导 |
 | [AI 辅助视频制作与游戏引擎](ai-creative-production-workflow.md) | [AI Creative Production Workflow](ai-creative-production-workflow-en.md) | AI 视频 10 秒魔咒、UE6/Bevy 路线、AI+Blender 工作流 |
+| [3D 工具能否替代 2D 工具](blender-replace-2d-tools.md) | [Can 3D Tools Replace 2D Tools?](blender-replace-2d-tools-en.md) | 历史成因、Blender 的 2D 能力现状、收敛与分叉的力量、判断框架 |
 | [3D 数据可视化](3d-data-visualization-aesthetics.md) | | 3D 作为叙事语言：物理流动/空间体积/纵深层级/材质语义 + 通用可视化问题的 3D 解法 |
 | [3D 渲染库选型](3d-rendering-library-selection.md) | | 自定义空间展示的渲染库之争：three.js/three-d/Bevy/deck.gl API 风格 + wasm 体积实测 |
 

@@ -1,5 +1,6 @@
 # Karpathy 的 AI 编程方法论
 
+> **语言：** [English](karpathy-ai-coding-methodology-en.md)（主文档）· [中文](karpathy-ai-coding-methodology.md)
 > 2026-06-29 创建
 
 **核心观点**：AI 智能体没有长期记忆，代码质量取决于人类提供的结构化程度。对抗 AI 代码膨胀的唯一方式是极简主义纪律和严格的工作闭环。
