@@ -1,5 +1,7 @@
 # Aura：存算一体的现代分布式摊位引擎
 
+> **语言：** [English](aura-architecture-en.md)（主文档）· [中文](aura-architecture.md)
+
 **状态**：架构设计完成
 **日期**：2026-06-20
 **核心哲学**：框架融合、计算下沉、零拷贝、确定性边界
@@ -480,7 +482,7 @@ def handle(ctx, user_message=None):
 
 场域（Event Realm）是引擎内部的事件空间：摊位不直接寻址，通过 `emit(name, data)` / `on(name, fn)` 交互——发射者不关心谁处理，处理者不关心谁发射。事件名就是引用，instance key 就是实例定位。要点：
 
-- **ctx 边界**（ADR-0011）：ctx 只收实例绑定 + Host 管控的能力（store-emit / interface_schema / invoke——点状态面 ctx.state 已退役，ADR-0026）；emit/on、契约、钩子留在场域层/静态契约
+- **ctx 边界**（ADR-0043）：ctx 是宿主提供给脚本的名字的全局命名空间对象（装载期绑定一次、会话存活）——`ctx.invoke / ctx.emit / ctx.store / ctx.iterate / ctx.timer.* / ctx.queue.* / ctx.schema / ctx.on / ctx.receives`；payload 走 handler 参数位（gRPC `func Foo(ctx, req)` 的正读），`ctx.return` 不存在（入口原生 return）。`ctx.on` 是注册原语（`@on`/`on` 是它的糖），**仅激活期合法**（相位门——handler 相位调用 = 错误值）；`__sleep`/`__wake` 生命周期钩子折叠为它的保留名（入 schema hooks 数组，不走 MQ 路由）。Rust 侧 `Handler = Fn(&Ctx, Value)`——ctx 是长期全局的借用，不是 handler 持有或穿线的值
 - **interface_schema()**：由 `@on` 装饰器推导（receives：事件名 → key 字段；通配符入 wildcard_receives）——emits 不声明、不收集、不校验（ADR-0012）：接收者集合是运行时事实，无订阅者的 emit 落入 dead-event ring，那是可观测的审计面
 - **实例化与分片**：同一 instance key 串行（状态一致），异 key 并行；**数据跟随所属节点（联邦裁决）**——instance key 作用域是节点内部，无全局放置、无跨节点重分片
 - **跨 Partition 查询**：投影摊位（持续聚合，推荐）/ Arrow HTAP（ad-hoc 列式扫描）
@@ -513,7 +515,7 @@ Rivet Actors 提供了优秀的摊位开发体验：TypeScript SDK、自动 HTTP
 生命周期：
 
 1. **上传（set）**：独立生命周期，可以永远不执行——Host 自省 `interface_schema()`（或从 `@on` 装饰器推导）一次，元数据（receives/lifecycle）与脚本一并持久化到 meta store，receives 派生投递路由
-2. **唤醒（on_wake）**：有事件到达时，Host 激活实例（定义已持久化，状态按需经 ctx.store.emit 从本类型 ns 的 collections 读写）；持久队列里该实例未消费的积压事件按游标继续送达
+2. **唤醒（`__wake`）**：有事件到达时，Host 激活实例（定义已持久化，状态按需经 ctx.store 从本类型 ns 的 collections 读写）；持久队列里该实例未消费的积压事件按游标继续送达。`__wake`/`__sleep` 是 `ctx.on` 的保留名钩子（ADR-0043 §3 折叠）——脚本写 `ctx.on("__wake", h)`，Rust 走构造期 `.hook("__wake", h)`，realm 在激活/驱逐时按 HookBody 形态（Compiled 直调 / Declared 过 resident session）分派
 3. **处理**：按事件名寻址 handler 执行；handler 内可 `emit()`，状态立即持久化；永不调用 `interface_schema`
 4. **休眠（on_sleep）**：空闲后状态落盘到 Fjall，内存归零（Scale-to-Zero；per-type idle_ttl 决定驻留窗口）
 5. **版本变更**：新 `set` 重新自省一次、更新持久化元数据与路由；此前旧元数据治理
