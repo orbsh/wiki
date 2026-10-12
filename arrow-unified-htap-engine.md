@@ -1,5 +1,7 @@
 # Arrow 大一统 HTAP 引擎：从数据格式物理分工到存算一体实现
 
+> **语言：** [English](arrow-unified-htap-engine-en.md)（主文档）· [中文](arrow-unified-htap-engine.md)
+
 **状态**：架构设计完成  
 **日期**：2026-06-20  
 **核心哲学**：内存、磁盘与网络视角的底层布局博弈 → 全链路单一数据格式化（Single Data-Layout Platform）

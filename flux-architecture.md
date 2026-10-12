@@ -1,5 +1,7 @@
 # Flux 架构：响应式的核心是数据流动
 
+> **语言：** [English](flux-architecture-en.md)（主文档）· [中文](flux-architecture.md)
+
 **核心命题**：传统 Web 架构是请求驱动的被动模式——浏览器刷新、轮询、回源拉取。Flux 架构反过来：数据变更时主动推送到边缘和客户端，用户请求只命中已就绪的数据。流计算和消息队列不是辅助组件，而是核心基础设施。"Flux"即流动——数据从产生到消费是一条连续的管道，没有中间的停顿和回拉。
 
 > Flux 架构是通信模式层的设计。与 [Aura](aura-architecture.md)（存算一体引擎）融合后，构成 [Fluxora](projects/fluxora-architecture.md)——事件驱动的完整系统。
@@ -218,5 +220,5 @@ Aura 从架构层面消除了上述问题：
 - **[Aura 架构](aura-architecture.md)**：存算一体引擎，Flux 架构的计算与存储层。Together = Fluxora。
 - **[Redis 批判](redis-critique.md)**：被动模式补丁的完整批判。Flux 架构从模式层面替代 Redis。
 - **[长连接工程挑战](long-lived-connection-engineering.md)**：WS/WT 长连接在 Flux 架构落地时的物理限制（背压、碎片化、连接倾斜）与解法。
-- **[mudra 实现](./../world/mudra/docs/WS-SYNC.md)**：多面板实时同步的具体实现——命令增量、按需字典、惰性同级的落地代码与验证。
+- **[mudra 实现](https://github.com/orbsh/mudra/blob/main/docs/WS-SYNC.md)**：多面板实时同步的具体实现——命令增量、按需字典、惰性同级的落地代码与验证。
 - **[Lakehouse 研究](lakehouse-research.md)**：索引版本号接口与 Lakehouse Catalog 同源——把版本治理从存储层提升到控制面。

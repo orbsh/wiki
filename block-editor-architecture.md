@@ -1,5 +1,7 @@
 # 块级编辑器架构：类 Notion 的 Block Editor
 
+> **语言：** [English](block-editor-architecture-en.md)（主文档）· [中文](block-editor-architecture.md)
+
 **状态**：架构设计完成
 **日期**：2026-06-20
 **核心哲学**：块是原子，CRDT 是灵魂，Yjs 是肌肉

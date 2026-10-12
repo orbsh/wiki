@@ -1,5 +1,7 @@
 # Agent 原则
 
+> **语言：** [English](agent-principles-en.md)（主文档）· [中文](agent-principles.md)
+
 *AI Agent 的通用设计原则和运维哲学——非 Hermes 特定。*
 
 ## 确定性 vs 非确定性工作边界

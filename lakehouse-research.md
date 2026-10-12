@@ -1,5 +1,7 @@
 # Lakehouse 研究
 
+> **语言：** [English](lakehouse-research-en.md)（主文档）· [中文](lakehouse-research.md)
+
 ## 1. 分析型负载全景
 
 分析型负载不等于 OLAP。OLAP 是其中一类——特指接受用户交互查询的分析型数据库。还有其他分析型负载不走 OLAP 路线。

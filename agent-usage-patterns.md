@@ -1,5 +1,7 @@
 # AI Agent 使用模式
 
+> **语言：** [English](agent-usage-patterns-en.md)（主文档）· [中文](agent-usage-patterns.md)
+
 *人类侧的交互技巧和审查习惯——决定 Agent 质量上限的不是模型能力，是使用方式。*
 
 ## 核心逻辑：质量上限由反馈精度决定

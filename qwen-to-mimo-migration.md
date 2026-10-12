@@ -1,5 +1,7 @@
 # 技术复盘备忘录：从 Qwen 全面转向 MiMo 2.5
 
+> **语言：** [English](qwen-to-mimo-migration-en.md)（主文档）· [中文](qwen-to-mimo-migration.md)
+
 **编写人**：架构组 / 核心开发团队
 **面向对象**：全体研发成员 / 生产业务线负责人
 **日期**：2026-06-20

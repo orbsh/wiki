@@ -1,5 +1,7 @@
 # Aura + Fluxora DevOps：脚本即代码的工程实践
 
+> **语言：** [English](aura-fluxora-devops-en.md)（主文档）· [中文](aura-fluxora-devops.md)
+
 **状态**：架构设计完成
 **日期**：2026-07-06
 **核心哲学**：Script-as-Code — 嵌入式脚本与 Rust 代码同等对待，纳入 Git 管理

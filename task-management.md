@@ -1,5 +1,6 @@
 # 任务管理架构：scratch 改进计划 与 agent 集成
 
+> **语言：** [English](task-management-en.md)（主文档）· [中文](task-management.md)
 > **状态**: 改进计划 / 设计分析（2026-08-28）
 
 ---

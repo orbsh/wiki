@@ -1,5 +1,7 @@
 # Flex UI：传输 UI 的事件驱动声明式框架
 
+> **语言：** [English](flex-ui-en.md)（主文档）· [中文](flex-ui.md)
+
 ## 定位
 
 Flex UI 是一套**前端/UI 框架设计原则**，与一般性的数据传输架构互补：

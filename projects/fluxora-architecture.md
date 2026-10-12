@@ -1,5 +1,7 @@
 # Fluxora 架构
 
+> **语言：** [English](fluxora-architecture-en.md)（主文档）· [中文](fluxora-architecture.md)
+
 **路径**：`~/world/fluxora/`  
 **类型**：事件驱动、AI 原生 UI 框架（Rust/Dioxus）  
 **状态**：仅维护（定期依赖更新）。战略重心已转移到图记忆。

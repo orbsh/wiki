@@ -1,5 +1,6 @@
 # Agent 复利：持久化如何改变 AI 工具的本质
 
+> **语言：** [English](agent-compound-interest-en.md)（主文档）· [中文](agent-compound-interest.md)
 > 2026-06-26 创建
 
 **结论**：AI 工具的价值不在单次对话的质量，而在跨会话的累积。没有持久化的 AI 是打工；有持久化的 AI 是投资。

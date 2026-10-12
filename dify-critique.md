@@ -1,5 +1,7 @@
 # Dify：AI 时代的 Harbor 复制品
 
+> **语言：** [English](dify-critique-en.md)（主文档）· [中文](dify-critique.md)
+
 **结论**：拒绝。
 **状态**：Harbor 的 AI 版本——同样的膨胀架构，更深层的范式矛盾。
 

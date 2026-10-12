@@ -1,5 +1,7 @@
 # 分布式协作架构：拓扑与一致性的正交选择
 
+> **语言：** [English](distributed-collaboration-topology-en.md)（主文档）· [中文](distributed-collaboration-topology.md)
+
 **Status:** 初始版本
 **核心论点：** 拓扑/信任边界（谁拥有数据、数据经过谁）与冲突解决算法（变更如何对齐）是两个正交维度，架构选型是二者的交叉组合而非单一光谱；跨所有权边界的海量数据走「大节点联邦 + 柔性事务」（联邦节点间 well-known 协议认证，元数据每节点独立单写，无共识），个人设备主权场景走本地优先（CRDT）；强共识（Raft/Paxos）保留给数据级强一致复制（外部 TiKV 类方案）；顺序层的天花板由因果序给定——全局序不是被观测到的，是被买来的（买价 = 一轮 RTT + 一个显式 ε），所以跨域的合法形态是单向事件与事后对齐，而非全局排序。
 **架构上下文：** [共识协议](consensus-protocol.md) — Raft 的机制与边界；[Aura 架构](aura-architecture.md) — 元数据单写、数据面本地的引擎落地

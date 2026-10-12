@@ -1,5 +1,6 @@
 # SurrealDB 评估档案：SurrealQL 与查询语言设计
 
+> **语言：** [English](query-language-design-en.md)（主文档）· [中文](query-language-design.md)
 > 核心架构**未采用** SurrealDB（见 [统一数据层架构](unified-data-layer.md)）——其图/多模型/计算下推需求被 PG（JSONB/扩展）与 KV 吸收，分析负载归 DuckDB·Lakehouse。但 SurrealQL 承载的查询语言洞见——原生组合性、计算下推、反 ORM——独立于 SurrealDB 而成立：即便 SurrealDB 不进核心，这些关于「查询语言应该长什么样」的论证依然有效。以下为完整评估。
 
 ## SQL 的根本性缺陷

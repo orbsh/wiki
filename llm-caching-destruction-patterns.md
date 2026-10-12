@@ -1,5 +1,6 @@
 # LLM 缓存的破坏模式
 
+> **语言：** [English](llm-caching-destruction-patterns-en.md)（主文档）· [中文](llm-caching-destruction-patterns.md)
 > Prompt Caching 的生效条件极苛刻：输入前缀必须稳定。任何打破前缀稳定性的行为——换模型、换工具、换用户、换项目——都会让缓存瞬间失效。
 
 ---

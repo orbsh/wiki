@@ -1,5 +1,7 @@
 # Nginx："高性能网关"的神话
 
+> **语言：** [English](nginx-critique-en.md)（主文档）· [中文](nginx-critique.md)
+
 **结论**：现代架构中已过时。  
 **状态**：性能平庸，配置原始，设计假设不再成立。
 

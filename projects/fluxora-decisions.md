@@ -1,5 +1,7 @@
 # Fluxora 架构决策记录（ADR）
 
+> **语言：** [English](fluxora-decisions-en.md)（主文档）· [中文](fluxora-decisions.md)
+
 ## ADR-001：CBOR 优于 Bincode
 
 - **决策**：所有 Kafka 队列流量使用 CBOR。拒绝 Bincode。

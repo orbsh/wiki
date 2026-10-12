@@ -1,5 +1,6 @@
 # AI 辅助视频制作与游戏引擎工作流
 
+> **语言：** [English](ai-creative-production-workflow-en.md)（主文档）· [中文](ai-creative-production-workflow.md)
 > 2026-07-22 创建
 
 ## 三种制作模式全景：updream 与 LibTV

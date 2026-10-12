@@ -1,5 +1,7 @@
 # 分布式锁：反模式分析
 
+> **语言：** [English](distributed-lock-anti-pattern-en.md)（主文档）· [中文](distributed-lock-anti-pattern.md)
+
 ## 核心论点
 
 分布式锁在绝大多数场景是**反模式**。锁把「阻塞」这个本来就该避免的东西，放大几个数量级——它引入延迟、时钟依赖、故障窗口，却通常解决一个本可用无锁方案解决的问题。

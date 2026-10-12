@@ -1,5 +1,7 @@
 # 长连接工程挑战：存算一体架构下的物理限制与解法
 
+> **语言：** [English](long-lived-connection-engineering-en.md)（主文档）· [中文](long-lived-connection-engineering.md)
+
 **状态**：初稿
 **日期**：2026-07-29
 

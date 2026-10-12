@@ -1,5 +1,6 @@
 # LLM 基础认知与心智模型
 
+> **语言：** [English](llm-fundamentals-en.md)（主文档）· [中文](llm-fundamentals.md)
 > 理解 LLM 的正确心智模型：它不是"理解语言的智能体"，而是"匹配统计模式的引擎"。所有 prompt 技巧、能力边界、使用策略都建立在这个基础上。
 
 ---

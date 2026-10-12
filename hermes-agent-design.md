@@ -1,5 +1,7 @@
 # Hermes Agent — 使用、配置与运维笔记
 
+> **语言：** [English](hermes-agent-design-en.md)（主文档）· [中文](hermes-agent-design.md)
+
 *Hermes 特定的使用约定、配置细节和项目特定的运维协议。*
 
 ## 模型选择

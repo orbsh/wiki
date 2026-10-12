@@ -1,5 +1,7 @@
 # SQL/PGQ —— 属性图查询
 
+> **语言：** [English](property-graph-queries-en.md)（主文档）· [中文](property-graph-queries.md)
+
 *SQL Property Graph Queries 在关系存储之上的落地设计。* 本文讲"图如何在关系库里定义、查询、演进"，与[图谱化记忆](graph-memory.md)互为表里：那是范式（为什么用图），这是载体（在 Postgres 栈里怎么把图建起来）。
 
 ## 一、SQL/PGQ 是什么

@@ -1,5 +1,7 @@
 # 并发控制与背压设计
 
+> **语言：** [English](congestion-control-design-en.md)（主文档）· [中文](congestion-control-design.md)
+
 Embedding 生成场景（SurrealDB 透传调用 Ollama）的并发控制设计。核心原则：并发控制是**调用方的职责**（端到端原则），不是 DB 层的。
 
 ## 信号链架构

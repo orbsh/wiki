@@ -1,5 +1,6 @@
 # LLM 隐藏行为模式与触发方式
 
+> **语言：** [English](llm-hidden-behavior-patterns-en.md)（主文档）· [中文](llm-hidden-behavior-patterns.md)
 > LLM 对每个中文词都有一套"默认输出模板"。Prompt 工程的本质不是加约束，而是选模板。
 
 > LLM 为什么有"默认输出模板"——它的基础认知机制（概率预测、统计模式匹配）详见 [LLM 基础认知与心智模型](llm-fundamentals.md)。

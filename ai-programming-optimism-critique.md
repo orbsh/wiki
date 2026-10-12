@@ -1,5 +1,6 @@
 # AI 编程乐观主义批判
 
+> **语言：** [English](ai-programming-optimism-critique-en.md)（主文档）· [中文](ai-programming-optimism-critique.md)
 > AI 编程的真实能力由"知识可触达性（Knowledge Reachability）"决定，而非代码生成能力。当前行业对 AI 编程的乐观预期建立在对三重知识困境的系统性忽视之上。
 
 ---

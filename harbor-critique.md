@@ -1,5 +1,7 @@
 # Harbor：企业膨胀的典型案例
 
+> **语言：** [English](harbor-critique-en.md)（主文档）· [中文](harbor-critique.md)
+
 **结论**：拒绝。  
 **状态**：表面光鲜，架构空洞。
 
