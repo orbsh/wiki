@@ -126,7 +126,7 @@ CLI 保留为脚本化事实源，不承担交互。
 - **SiteWidth**（ns 5）：域名 → 列宽比例（0~1）。
 - **State**（ns 6）：定长槽位——`current_context`（situation，默认 inbox）、sort、各表自增计数器、dev_mode 等。
 - **History**（ns 7）：地址栏访问积累（`by_url` 函数索引），`/open`、`/add` 经 `history_bump` 写入，**不 bump epoch**（面板不可见 collection 不占 epoch 纪律）。
-- **Event**（ns 8）：只追加事件日志（page_open / page_close / tag_set），`POST /events {cursor,limit}` 回放，checkpoint 归消费方；同样不 bump epoch。
+- **Event**（ns 8）：只追加事件日志（page_open / page_close / tag_set），`POST /events {cursor,limit}` 回放（`{tail:N}` 是同一读法的尾部锚定，响应带回 `head`——控制台日志视图按它读），checkpoint 归消费方；同样不 bump epoch。
 - **迁移策略（原型阶段）**：schema 变更直接删库重建（停 daemon → `rm -rf ~/.local/share/mudra/store` → 起 → `POST /tag_seed`），不做迁移。
 
 ### 隔离实例 = workspace（并发）
@@ -211,6 +211,7 @@ daemon 不是 CLI 子命令：`mudrad run` 常驻归 systemd user 服务。
 - ⏳ 同实例多窗口 ≈ 多标签的资源等价逻辑成立，未实测；走 B 并发版，多实例资源为预期代价。
 - ✅ 扩展拦截面落地（2026-10-13）：`mudra:before_navigate` 判决（allow/deny/redirect）、调用 id 由宿主分配且与事件日志 id 不相交、宿主侧 200ms 预算、一切失败面放行；闸门挂 `/open` 与 `/nav` 的 `goto`；真机常驻测试压住 deny/allow/redirect 三态。
 - ✅ Hook collection 落地（2026-10-13，ns 9）：`name` / `matches`（逗号分隔 URL 子串，空=所有页）/ `code` / `enabled` / `updated_at`，按 name 幂等 upsert（缺省字段保留原值），写不 bump epoch；治理面 `/hook_set` `/hook_list` `/hook_delete` + CLI `mudra hook set|ls|rm`，执行落点=既有注入桥（一钩子一份带守卫源码）。
+- ✅ 控制台入口（2026-10-13）：面板加 `events` / `hooks` 两个视图（头部三钮切换 pages/events/hooks；ctx 选择器与过滤 chips 只属页面树）。事件日志只读、倒序一行一条、kind chip 多选过滤、按 `/events {tail}` 重拉（挂 epoch 提示——事件自身不 bump，但现有事件种类都伴随可见写入）；钩子视图做与 CLI 同一组动词的 CRUD（开关 / 删除（二次确认）/ 新建 / 编辑表单），写完自持重拉（hook 写不 bump epoch）。两视图都不开第二通道。
 - ⏳ 精炼管线（§十 P8–P12：正文转 MD + 全文检索、NB 评分、RSS 捕获、LLM 汇总）未开工。
 
 ## 十、开放问题
@@ -235,7 +236,7 @@ daemon 不是 CLI 子命令：`mudrad run` 常驻归 systemd user 服务。
 - **信任模型不变**：本机 = 信任边界，扩展面与 8899 一样不设身份准入；跨节点认证归联邦（well-known）层，不适用于本机面。
 - **可移植性**：同一个 per-language guest 在 mudrad 与 aura effector 两边通吃（k10r 同步是预期的第一个双侧消费者）；k10r 集成只是"一个扩展示例"，mudra 不认识 k10r。
 - **已落地的实现形状（拦截面，2026-10-13）**：调用帧 = `mudra:before_navigate`，args = `{url, ctx}`；应答 = `{"verdict":"allow"|"deny"|"redirect","url"?}`；调用 id 由宿主分配，取自与事件日志行 id 不相交的空间；等待有宿主侧预算（200 ms——`Tier`/deadline 在 hello schema 里是预留位，库与 guest 尚未携带，故先是宿主常量）；多扩展按注册序（名字序）取**第一个非 allow**；`deny` 以 `{"blocked":true,"by":扩展名,"url":…}` 回复调用方且不执行动词，`redirect` 改写请求 url 后执行；闸门挂 8899 的两个导航**入口**——`/open` 与 `/nav` 的 `goto`，刻意**不挂** `run_verb`（guest 自己的 `host:invoke` 不能被它正在执行的那个判决拦住）；所有失败面（无声明会话、预算到期、通道断、队列满、应答不可解析）一律放行。
-- **钩子面（轻量规则路径，2026-10-13 落地）**：页面侧 JS 作为数据——Hook collection（ns 9：`name` / `matches` / `code` / `enabled` / `updated_at`，按 name 幂等 upsert、缺省字段保留原值、写不 bump epoch），治理走 8899 动词（`/hook_set` `/hook_list` `/hook_delete`）与 CLI（`mudra hook set|ls|rm`）。执行落点=既有 `INJECT_JS` 注入桥：**一钩子一份**带字面子串守卫的源码（语法错只杀自己），code 逐字内联（不用 `eval`，严格站点 CSP），写钩子后对运行中实例的活页做一次 best-effort 重注入；disable/delete 只影响未来文档（活页代码收不回，reload 重新武装）。
-- **未落地**：`iterate` 各臂空载（触及即显式错误值拒答，等消费方报名）、`/events` 与 `/hook_*` 尚无面板入口（只走 CLI/curl）。
+- **钩子面（轻量规则路径，2026-10-13 落地）**：页面侧 JS 作为数据——Hook collection（ns 9：`name` / `matches` / `code` / `enabled` / `updated_at`，按 name 幂等 upsert、缺省字段保留原值、写不 bump epoch），治理走 8899 动词（`/hook_set` `/hook_list` `/hook_delete`）、CLI（`mudra hook set|ls|rm`）与控制台 `hooks` 视图。执行落点=既有 `INJECT_JS` 注入桥：**一钩子一份**带字面子串守卫的源码（语法错只杀自己），code 逐字内联（不用 `eval`，严格站点 CSP），写钩子后对运行中实例的活页做一次 best-effort 重注入；disable/delete 只影响未来文档（活页代码收不回，reload 重新武装）。
+- **未落地**：`iterate` 各臂空载（触及即显式错误值拒答，等消费方报名）。
 
 决策全文见 mudra 仓 `docs/ADR-extension-protocol.md`（双语）；被它取代的 aura+probe 联邦草案见 `docs/ADR-aura-probe-federation.md`（Superseded）。
