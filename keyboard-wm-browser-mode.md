@@ -226,7 +226,7 @@ daemon 不是 CLI 子命令：`mudrad run` 常驻归 systemd user 服务。
 
 控制面之外的第二条机器面。**形**：扩展 = 宿主管托的**常驻子进程**（stdio 管道），**不是**网络服务联邦。动机：一次页面事件常有多个消费者（分类、拦广告、改样式），若每个消费者都是一个服务，用户就在维护服务注册表；托管把"多消费者"变成进程生命周期问题。
 
-- **线契约 = Induction**（aura BGI 词汇抽取出的独立协议，crates 住 `~/world/induction`）。mudra 零 aura crate 依赖——契约即依赖，正如 `aura_alloc` 之于 wasm guest。自造帧词汇与 LSP 类比均已撤回：扩展是**插件血统**（能力单向提供、下游自用不用），词汇静态、双方天然知道，协商面是伪需求（LSP 的 capability 协商解决的是两个独立演化对等体的对齐）。
+- **线契约 = Induction**（crates 住 `~/world/induction`；词汇出自 aura BGI 的抽取——来处在 aura ADR-0035 §3，家在这两个 crate；帧形状与 11 个臂名都由库定义，改名前先读库）。mudra 零 aura crate 依赖——契约即依赖，正如 `aura_alloc` 之于 wasm guest。自造帧词汇与 LSP 类比均已撤回：扩展是**插件血统**（能力单向提供、下游自用不用），词汇静态、双方天然知道，协商面是伪需求（LSP 的 capability 协商解决的是两个独立演化对等体的对齐）。
 - **声明**：`config.kdl` 的 `[extensions]` 只管 name → 可执行路径（路由元数据）；事件订阅声明在**脚本的 interface_schema**，由 `hello` 帧携带（进程外 binary 宿主无法内省）——不进配置（改订阅不该改配置），也不是协商（静态声明）。投递只按声明的 kind 扇出，无广播、无隐藏分发。
 - **投递 = 声明的 `Tier`**：`Hot` + deadline = **拦截语义**（导航前判决，超时是 failure value，mudra 侧映射 fail-open——导航 UX 优先）；`Cold` = **观察语义**（dispatch 返回 Pending，不泊产生方；处理器可经 host 帧后续作答，也可以不答）。一个处理器只有其中一种形状。
 - **事件日志是投递基础设施**：事件同时落只追加的 Event collection（ns 8），消费者自持 cursor 回放（checkpoint 归消费方）；扩展重启从自己的 cursor 续读。
