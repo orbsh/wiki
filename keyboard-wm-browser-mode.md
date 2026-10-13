@@ -210,7 +210,7 @@ daemon 不是 CLI 子命令：`mudrad run` 常驻归 systemd user 服务。
 - ⏳ CDP 对错误页（`chrome-error`）reload / navigate 未实测（按机制应当可控）。
 - ⏳ 同实例多窗口 ≈ 多标签的资源等价逻辑成立，未实测；走 B 并发版，多实例资源为预期代价。
 - ✅ 扩展拦截面落地（2026-10-13）：`mudra:before_navigate` 判决（allow/deny/redirect）、调用 id 由宿主分配且与事件日志 id 不相交、宿主侧 200ms 预算、一切失败面放行；闸门挂 `/open` 与 `/nav` 的 `goto`；真机常驻测试压住 deny/allow/redirect 三态。
-- ⏳ Hook collection（页面钩子脚本的治理面）未落地。
+- ✅ Hook collection 落地（2026-10-13，ns 9）：`name` / `matches`（逗号分隔 URL 子串，空=所有页）/ `code` / `enabled` / `updated_at`，按 name 幂等 upsert（缺省字段保留原值），写不 bump epoch；治理面 `/hook_set` `/hook_list` `/hook_delete` + CLI `mudra hook set|ls|rm`，执行落点=既有注入桥（一钩子一份带守卫源码）。
 - ⏳ 精炼管线（§十 P8–P12：正文转 MD + 全文检索、NB 评分、RSS 捕获、LLM 汇总）未开工。
 
 ## 十、开放问题
@@ -219,7 +219,7 @@ daemon 不是 CLI 子命令：`mudrad run` 常驻归 systemd user 服务。
 - **引擎 UI 缺口**：下载 / 打印等原本由浏览器 chrome 提供的功能，需另行接（CDP / 省略）。
 - **tag 森林的深化**：树内单选的 app 约束、isolated 多命中（现为未定义行为）、域名词典的规则迭代与 ML 辅助；inbox 分流的 UX 细节。
 - **ML 打标**：朴素贝叶斯 / 逻辑回归从手动评分学"该选哪个值"，生成规则供审（非 LLM 黑箱）。
-- **扩展拦截面**：Hot + deadline 的 fail-open 映射、Hook collection 的键布局与执行落点（沿用既有 `INJECT_JS` 注入桥）——设计在 ADR，未落地。
+- **钩子的生效边界**：disable / delete 收不回已经注入到活页面的代码——reload 才按当前集合重新武装。是否要一个"重载匹配页"的动词（把当前页按新集合重新武装）留待需求出现。
 - **扩展状态归属**：`store` 臂明确不实现（扩展状态归扩展自己，宿主拥有的事件日志只是投递设施）；若将来出现真正需要共享状态的扩展，这条边界要重新审。
 
 ## 十一、扩展面（常驻子进程，2026-10 落地）
@@ -235,6 +235,7 @@ daemon 不是 CLI 子命令：`mudrad run` 常驻归 systemd user 服务。
 - **信任模型不变**：本机 = 信任边界，扩展面与 8899 一样不设身份准入；跨节点认证归联邦（well-known）层，不适用于本机面。
 - **可移植性**：同一个 per-language guest 在 mudrad 与 aura effector 两边通吃（k10r 同步是预期的第一个双侧消费者）；k10r 集成只是"一个扩展示例"，mudra 不认识 k10r。
 - **已落地的实现形状（拦截面，2026-10-13）**：调用帧 = `mudra:before_navigate`，args = `{url, ctx}`；应答 = `{"verdict":"allow"|"deny"|"redirect","url"?}`；调用 id 由宿主分配，取自与事件日志行 id 不相交的空间；等待有宿主侧预算（200 ms——`Tier`/deadline 在 hello schema 里是预留位，库与 guest 尚未携带，故先是宿主常量）；多扩展按注册序（名字序）取**第一个非 allow**；`deny` 以 `{"blocked":true,"by":扩展名,"url":…}` 回复调用方且不执行动词，`redirect` 改写请求 url 后执行；闸门挂 8899 的两个导航**入口**——`/open` 与 `/nav` 的 `goto`，刻意**不挂** `run_verb`（guest 自己的 `host:invoke` 不能被它正在执行的那个判决拦住）；所有失败面（无声明会话、预算到期、通道断、队列满、应答不可解析）一律放行。
-- **未落地**：Hook collection（页面钩子脚本的治理面——轻量规则样式留纯 Hook JS，不起进程）、`iterate` 各臂空载（触及即显式错误值拒答，等消费方报名）、`/events` 尚无 CLI 入口。
+- **钩子面（轻量规则路径，2026-10-13 落地）**：页面侧 JS 作为数据——Hook collection（ns 9：`name` / `matches` / `code` / `enabled` / `updated_at`，按 name 幂等 upsert、缺省字段保留原值、写不 bump epoch），治理走 8899 动词（`/hook_set` `/hook_list` `/hook_delete`）与 CLI（`mudra hook set|ls|rm`）。执行落点=既有 `INJECT_JS` 注入桥：**一钩子一份**带字面子串守卫的源码（语法错只杀自己），code 逐字内联（不用 `eval`，严格站点 CSP），写钩子后对运行中实例的活页做一次 best-effort 重注入；disable/delete 只影响未来文档（活页代码收不回，reload 重新武装）。
+- **未落地**：`iterate` 各臂空载（触及即显式错误值拒答，等消费方报名）、`/events` 与 `/hook_*` 尚无面板入口（只走 CLI/curl）。
 
 决策全文见 mudra 仓 `docs/ADR-extension-protocol.md`（双语）；被它取代的 aura+probe 联邦草案见 `docs/ADR-aura-probe-federation.md`（Superseded）。
