@@ -75,6 +75,42 @@ The difference between the four designs can be compressed into one variable: **w
 - Write-time index: high update cost (changing one item requires rebuilding the index), high query quality (the index is exact)
 - Read-time index: low update cost (writing completes it), bounded query quality (the ceiling of the embedding model)
 
+## Why Graphs Work: the Existence Proof in Code
+
+One fact deserves to stand as an argument rather than an anecdote: AI is
+especially effective at programming, and one root reason is that **code is
+inherently a graph** — a call site jumps to its definition, a definition
+references other functions, a function may be referenced from many places.
+Without an LSP, a name still finds its definition. Natural language cannot
+do that.
+
+The code domain hands over all four requirements of graph retrieval for
+free:
+
+1. **Identity is declared and unique** — one definition, one canonical
+   name; no "one concept, ten synonyms".
+2. **Relations are typed and directed** — calls, imports, references, plus
+   the reverse "referenced by".
+3. **Resolution is exact and cheap** — name → definition is a lookup, not a
+   similarity computation. This is the decisive difference from natural
+   language.
+4. **Multiplicity and reverse edges are first-class** — N callers of one
+   function = one reverse scan, with no extra structure.
+
+Natural language lacks exactly (1) and (3): one concept has no canonical
+name (synonyms, pronouns, paraphrase), so resolution can only be
+approximate. That is the reason vector retrieval exists in a graph memory:
+it is not a substitute for the graph but the entrance that covers identity
+resolution; once identity is settled, everything downstream is
+deterministic graph work.
+
+The cost conclusion: **the cost of graph memory sits almost entirely in
+BUILDING identity** (extraction → entity convergence → canonical names and
+aliases), not in retrieval or traversal. In the code domain the language
+and compiler pay that bill; the natural-language domain must pay it itself
+— which is where the investment belongs, rather than in fancier retrieval
+algorithms.
+
 ## Where the Property Graph Sits in Agent Memory
 
 Agent memory must satisfy two contradictory requirements at once:
@@ -407,7 +443,7 @@ Facts are an append-only record of objective events. Two opposite facts (differe
 
 - **Weight accumulation**: each fact carries a weight, and retrieval sorts by weight. Facts that recur and are corroborated by multiple sources gain weight, and isolated facts naturally sink—the authority to adjudicate conflicts is delegated to the accumulation of evidence, not to the order of a single write.
 - **Actor/domain attribution**: each fact node carries the subject to which it belongs. If opposite statements of the same question belong to different subjects, they are not a conflict but two positions—the retriever adopts according to its own perspective, and the two coexist in the graph.
-- **Derived views at retrieval time**: hybrid retrieval (vector + BM25 + graph traversal) returns a set of facts ranked by the current query context, and the view is assembled at read time. The same graph derives different views for different queries—this is a direct corollary of "read-time computing" in conflict resolution.
+- **Derived views at retrieval time**: retrieval (vector landing + graph traversal) returns a set of facts ranked by the current query context, and the view is assembled at read time. The same graph derives different views for different queries—this is a direct corollary of "read-time computing" in conflict resolution.
 
 This stance is consistent with the computational-timing spectrum: conflict resolution is a read-time operation. Moving it to write time (separating truth, overwriting, RMW rewriting) means giving up all the benefits of append-only and returning to the old path of traditional designs.
 
