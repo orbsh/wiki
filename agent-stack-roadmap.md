@@ -79,3 +79,18 @@
   FFI 保留。mem-server 从 deferred 转正；aura PLAN Phase 6.6（Storage Booth /
   NestStorage executor）随之出局。gravity 侧影响：MemorySurface trait（进程内/
   HTTP 两 impl）+ HTTP 模式（store_url）待落地。
+
+### 2026-10-13
+
+- **gravity 载体裁决：纯 Rust，摊位形态 = induction 原生子进程**。取代两个
+  旧形态：① 2026-10-10 的 python 载体 cut（turn/provider 均为内嵌 python
+  booth，gravity `c6de8f9`——其成因是 aura `Body::Rust` 进程内闭包无驻留
+  状态持迭代器，子进程天然满足，约束从来不是语言）；② wiki 旧文案的
+  wasm 产物发布形态（wasm 通道已随 aura Phase 4.21 退役）。形态：Rust
+  guest 二进制，stdio 管道帧协议（`~/world/induction`），流式逐帧 stdout、
+  `done` 信封收尾（单次与流式共用同一信封，induction-protocol `frame.rs`）。
+  同批落地：gravity PLAN（Phase 1 provider 改 induction guest、Phase 4
+  SUPERSEDED 注记 + Phase 4.1 重落条目）、gravity README、aura ADR-0034
+  Errata（§6「生产侧 = script carriers」作为形式被取代，en+zh）、wiki
+  stateless-agent-architecture（en+zh，摊位形态与 CLI 循环节）。代码重写
+  （gravity-booth 换 induction-guest）待用户确认后执行。

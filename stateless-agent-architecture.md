@@ -55,7 +55,7 @@ Prism 基于 Aura，刻意薄：鉴权 + 解析 + 投递。队列、重试、超
 
 Gravity 的全部职责：Krystallizer full 模式取会话 → LLM 调用与工具调用循环 → 新增消息 append 回去。本质上每个 Gravity 是**单趟**的：一个 turn 一趟执行，跑完即止——没有常驻循环实体，「循环」只是 turn 的连续投递。名字取引力（Gravity）而非轨道（Orbit）正在于此：轨道是常驻物体的属性，引力是每趟都被施加的力——turn 落地即被会话真相牵引，执行完就释放，下趟另行落点。
 
-实现为 Rust 外壳 + 多语言内嵌（Aura 既定拓扑：Rust 高性能外壳，Steel/Python/Wasm 经 PyO3/Wasmtime 内嵌，零 IPC）。Gravity 本身不感知工具脚本的语言——tool call 进、tool result 出，语言多样性在 Effector 侧解决。
+实现为纯 Rust（摊位形态 = induction 原生子进程，stdio 管道帧协议；Aura 既定拓扑：解释型语言骑内嵌载体，编译型语言骑 induction）。Gravity 本身不感知工具脚本的语言——tool call 进、tool result 出，语言多样性在 Effector 侧解决。
 
 **LLM 调用归属 Gravity**：压缩等尾提示词触发的 LLM 调用由 Gravity 实现——上下文缓存与模型（及账户）绑定，只有发起推理的一侧才知道模型信息。Krystallizer 只提供原语（分支注入、摘要收集、checkpoint 写入），不持有任何模型身份；唯一例外是它内部的向量嵌入（嵌入空间与数据正确性绑定，归记忆系统自持）。详见 [Krystallizer](krystallizer.md)。
 
@@ -304,7 +304,7 @@ memory.write_assistant_message(session_id, assistant)  # 写入 DB + 清空 pend
 
 框架适配之上是会话即数据的无状态模式——三步调用收缩为「取会话 → 执行 → 存会话」，压缩决策沉到 Krystallizer 内部、执行走并行旁路，见本文「压缩是与主线并行的旁路」一节与 [Krystallizer](krystallizer.md)。
 
-**自带 CLI 驱动循环**：Gravity 提供本地 CLI 形态——进程内循环执行 turn（取会话 → 跑 → 存，下一 turn），这是本地/单机模式；同一 Gravity 函数在 Aura 中注册为摊位类型时，每条 turn 事件触发一趟执行，是分布式模式。同一执行函数，三种驱动：CLI for 循环（本地）、Aura 摊位（分布式）、函数计算（serverless）——CLI 就是函数的 for 循环，摊位就是函数的单次调用。发布形态上 Gravity 编译为 `.wasm` 产物运行时上传 Aura（`set(lang="wasm", bytes)`），不是编译进 aura 二进制——Aura 是平台不是应用框架，Agent 应用加功能靠上传新产物，不靠重打包引擎；存储经 `VirtualStorage` 帧上抛由 host 承载（Krystallizer ADR-0007 存储承载分流）。
+**自带 CLI 驱动循环**：Gravity 提供本地 CLI 形态——进程内循环执行 turn（取会话 → 跑 → 存，下一 turn），这是本地/单机模式；同一 Gravity 函数在 Aura 中注册为摊位类型时，每条 turn 事件触发一趟执行，是分布式模式。同一执行函数，三种驱动：CLI for 循环（本地）、Aura 摊位（分布式）、函数计算（serverless）——CLI 就是函数的 for 循环，摊位就是函数的单次调用。摊位形态 = **induction 原生子进程**（2026-10-13 载体裁决，取代早期 python 载体与 wasm 产物两个形态）：Gravity 编译为 Rust guest 二进制，stdio 管道帧协议交互（`~/world/induction`），流式逐帧写 stdout、`done` 信封收尾（单次调用与流式共用同一信封形状）；流状态活在 guest 进程里，进程即流状态。不是编译进 aura 二进制——Aura 是平台不是应用框架，Agent 应用加功能靠注册新摊位类型，不靠重打包引擎；存储经 ctx store 帧上抛由 host 承载（Krystallizer ADR-0007 存储承载分流）。
 
 Aura 中 Gravity 是一个摊位类型：同一会话串行（摊位单线程语义，partition key = session_id），不同会话并行；turn 之间默认 scale-to-zero，`on_sleep`/`on_wake` 退化为存取两个动作——保留期驻留是此默认的细化：驻留窗口内同会话 turn 复用执行体，超时/显式释放才落入存取两个动作（见统一调用模型一节）。流式输出经高频 emit 事件转 SSE 推送——传输面由 Prism 的 WS 网关承载（Gravity 与 Prism 之间仍是场域事件，无直接连接）。
 
