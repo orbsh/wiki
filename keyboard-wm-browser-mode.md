@@ -64,7 +64,7 @@ Chromium 是 **process-per-page**（每页面一个 renderer，无论一窗多�
 
 ## 五、地址输入、历史与命令（热键）
 
-- "地址栏"由**扩展的命令模式 `:open`** 承担：候选 = 当前活动页（仅 console 角色，选中→focus）排在**历史行**之前（History collection，ns 7；四腿 RRF 排名=标题 BM25 / 地址前缀 / 访问次数 / 时间，见 `/history`），选中历史即开该 URL，无候选 Enter 即按输入开 URL。**2026-10-13 换法**：旧的"子序列相似度（`sim_score`）在 url∨title 上 × 访问次数"两腿作废（`sim_score`/`rrf`/`history_candidates` 一并退役）——URL 文本对打分基本是噪声，它的有意义部分只是**开头**（当前缀腿，按剥掉 scheme/www 的地址匹配），词法信号改由**标题 BM25** 承担；召回＝标题 n-gram 索引 ∪ 地址前缀索引，两条腿都不命中的地址（无论访问多少次）不再出现在非空查询里。
+- "地址栏"由**扩展的命令模式 `:open`** 承担：候选 = 当前活动页（仅 console 角色，选中→focus）排在**历史行**之前（History collection，ns 7；四腿等权 RRF 排名，见 `/history`），选中历史即开该 URL，无候选 Enter 即按输入开 URL。**2026-10-14 换法**：指称文本＝剥掉 scheme 的打字面（小写）＋小写标题；召回＝**词元子串包含**（**没有长度地板**，两个字符也算词元）∪ **子序列**（`sim_score` 回归为模糊腿——`ghb`→github 由它答，`ycombinat`→news.ycombinator.com 由地址中段任意位置的包含答）；打分＝文本 BM25（URL 噪声由 idf 承担，不是靠把 url 挡在召回之外）＋访问次数＋时间，四腿等权 RRF；两条召回腿都不命中的地址（无论访问多少次）不出现在非空查询里，空查询保留旧规则（全表、按访问次数）。`by_addr`/`by_title` 两个读索引退役：子序列没有索引可答（字符集索引＝同一次全读、局部性更差），召回只能是一次全读，索引随之失去剪枝对象——历史行＝一行一个地址（不是一次访问一行），本机全库 108 KB 量级，空查询本来就全读。
 - 历史由 `/open`、`/add` 经 `history_bump` 写入，**不 bump epoch**（面板不可见 collection 不占 epoch 纪律）。
 - 前进 / 后退 / 刷新 = CDP history 命令（`Page.getNavigationHistory` / `navigateToHistoryEntry` / reload），经统一动词面 `/nav` 暴露。
 - 早期"launcher（walker）承担地址输入"方案随 launcher 层一起废弃（2026-09）。
@@ -120,7 +120,7 @@ CLI 保留为脚本化事实源，不承担交互。
 
 ### 数据模型（KV collection 布局，规格见 mudra 仓 `docs/SCHEMA.md`）
 - **Tag**（ns 1）：邻接表（`parent_id`，根哨兵 −1）；`by_name` 函数索引做裸名寻址。种子树（`POST /tag_seed`，幂等）：`situation`（inbox/work/personal/privacy，四叶 isolated、inbox required）、`importance`/`urgency`/`quality`（各 ☆..☆☆☆☆☆ 五级、`rank` 排星序）、`state` 流水（to-read/reading/distilled/archived）、`topic`。
-- **Page**（ns 2）：`url` 由 CDP `infoChanged` **实时更新** → 可地址过滤；`parent_id` = 页面树（子页 = 由它打开的页，CDP `openerId`）；`by_target` / `by_instance` 函数索引，`page_by_target` 语义 = 活 CDP target 查找；`by_text` = **指称文本**（url + title，两端小写化的 3-gram）多值函数索引，配 `pages_by_fragment`（gram 召回 → BM25 精排，法则住在 store，精排不再归调用方）——消费方 `/focus <query>`：对该 ctx 的活开页排名取首个命中（不再取"碰巧排前面"的 live target）。**布局变更**：索引名与 gram 内容都动了，旧 store 无 `by_text` 条目 → 旧行需按重建流程（删库 + `/tag_seed`）才召回得到。
+- **Page**（ns 2）：`url` 由 CDP `infoChanged` **实时更新** → 可地址过滤；`parent_id` = 页面树（子页 = 由它打开的页，CDP `openerId`）；`by_target` / `by_instance` 函数索引，`page_by_target` 语义 = 活 CDP target 查找；**指称文本**（剥 scheme 的地址 ＋ title，两端小写）不设索引：`pages_by_fragment` 是排名法则的唯一住所，召回＝查询词元的子串包含（**无长度地板**），打分＝BM25（统计量取自这一次全读的语料普查，是精确值）——消费方 `/focus <query>`：对该 ctx 的活开页排名取首个命中（不再取"碰巧排前面"的 live target，也不再有 gram 地板把两字符查询判成"查无此页"）。**布局注记**：`by_text` gram 索引移除后，它的条目成了无人读取的死字节——旧 store 照常可用、**无需重建**（要回收空间才走删库 + `/tag_seed`）；slot 即声明序（okm ADR-0005），该位置以后不得直接声明新索引，除非保留 `deprecated` 占位。
 - **page_tag**：junction（两端分别落在 Page ns 2 与 Tag ns 1，自身不占 ns）。
 - **Instance**（ns 4）：`profile` = situation 叶名（1 isolated tag ↔ 1 instance）；`proxy` / `extensions` 按实例持久化，`mudra conf` 预建 `running=0` 行。
 - **SiteWidth**（ns 5）：域名 → 列宽比例（0~1）。
@@ -165,7 +165,7 @@ mudra close [query] [--ctx LEAF]    关整实例，或按 url 过滤关单页
 mudra ctx [LEAF]                    显示 / 切换当前上下文（situation 叶）
 mudra ls [LEAF] [-f FILTER]         各叶页数概览 / 某叶页列表（url·title 过滤）
 mudra targets <ctx>                 列活动 page target
-mudra focus <query> [--ctx LEAF]    按 url/title 找页并带到前台（by_text 3-gram 召回 + BM25 精排，取该 ctx 活页首个命中）
+mudra focus <query> [--ctx LEAF]    按地址/标题找页并带到前台（指称文本词元包含 + BM25，无长度地板；取该 ctx 活页首个命中）
 mudra goto|back|forward|reload [--ctx]   导航
 mudra page move-here|swap|close <url>    页操作
 mudra move <ctx> <workspace>        把该上下文的窗口移到 workspace（niri）
