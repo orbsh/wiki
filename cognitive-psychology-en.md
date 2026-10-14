@@ -60,9 +60,46 @@ The human brain has an innate drive to resolve ambiguity and "close the door" on
 - **Anxiety amplified by comparison with others' success** strengthens the need for certainty. Every "safe" step leads down a path already walked—the most certain outcome is mediocrity.
 
 ### Breaking the Trap
-1. **Set an "uncertainty quota"**—dedicate about 20% of your time to things with unknown outcomes. Use *graduated exposure therapy*: small, regular doses of uncertainty build tolerance over time.
+1. **Set an "uncertainty quota"**—dedicate about 20% of your time to things with unknown outcomes. Use *graduated exposure therapy*: small, regular doses of uncertainty build tolerance over time. (The same mechanism as the track-switching practice in "Neuroplasticity" above: one exposes you to small doses of uncertainty at the schedule level, the other attaches a new action at the instant a behavior is triggered.)
 2. **Shift from outcome goals to process goals**—not "write a bestseller" but "write 1,000 words a day." The process is 100% controllable; fear drops, action follows. *Make the process certain, let the outcome stay open.*
 3. **Minimum viable experiments**—prototype before committing. Break uncertainty down into manageable probes: test a business idea with a weekend MVP; try writing 10 articles before declaring yourself a writer.
+
+---
+
+## Neuroplasticity: The Brain's Default State
+
+*Why "I can be changed" is the wrong question—the real question is what I am being changed by.*
+
+Source: Preston, "Once You Understand Neuroplasticity, Life Will Be Completely Different," October 2026.
+
+### The Core Thesis
+
+Plasticity is not a capability but the brain's default running state. It does not need to be started on purpose, and it does not distinguish between "practice time" and "non-practice time": what you do, what you think, and what you experience repeatedly all take part in shaping it. Change is therefore inevitable; the only thing you get to decide is what you are changed by.
+
+The brain allocates resources by frequency of use—places you use more get a little more; places you stop using quietly have their resources taken back and moved elsewhere. Resources are finite, and it looks only at what you use most; it has no way to judge which functions you are not using now but which actually matter.
+
+### Two Directions
+
+- **Upward: use makes it stronger.** Neurons that fire together wire together—the more often two neurons are activated at the same time, the stronger the connection between them, and the easier it becomes for them to fire together again. After three months of learning to juggle, the region that processes visual-motion information showed a clear increase in gray matter; after three months without practice, part of that increase fell back. People who only "imagined" playing the piano in their heads showed changes in the motor cortex similar to those who practiced with a real instrument—mental rehearsal counts as input too.
+- **Downward: not using is also a form of practice.** Stroke patients initially find the affected arm so effortful and so frustrating that they rely more and more on the healthy hand, and over time the affected arm truly becomes less and less responsive—Taub called this "learned non-use": not that it cannot be used, but that because it was not used, it eventually could not be. Constraint-induced movement therapy puts a mitt or sling on the healthy side and forces high-intensity daily use of the affected arm; its efficacy has been confirmed by multicenter clinical trials, and after treatment the corresponding region in the motor cortex expanded again. Chronic stress shapes the brain in the same way: rats kept under chronic stress for ten consecutive days showed amygdala neurons (alertness and fear) with longer, more branched dendrites, while some hippocampal neurons (learning and memory) actually had their dendrites shrink—the direction in which stress shapes the brain is precisely toward making it more prone to stress.
+
+### Three Rewrites
+
+- **"This is just who I am" → "So far, this is what my brain has been shaped into."** This is not merely consolation: a 2019 study in *Nature* covering more than 12,000 American ninth-graders, in which the students completed only two online lessons of just over twenty minutes each, whose core content was a single sentence—the brain changes through effort and practice. Over one school year, students who had been behind showed measurable gains, and overall the students became more willing to choose harder math courses. Merely knowing the fact that "the brain changes" is enough to change a person's choices.
+- **"Persistence" is not a contest of willpower but an accumulation of repetitions—and not every repetition needs to be dramatic.** A group of neurons in the rat hippocampus that fired while the rat explored a field during the day fired again in a similar pattern during sleep, as if "replaying" the day's experience—after practice, the brain keeps processing. So twenty minutes a day for a month is usually far more effective than ten hours in a single burst: the former gives thirty chances to turn the switch on, plus thirty nights of tidying up.
+- **The effortfulness of "difficulty" is the signal that the brain is remaking itself.** Methods that make the learning process more effortful—spaced practice, self-testing, interleaving—feel harder and produce worse performance in the moment, yet are remembered better and used more flexibly over time (Bjork's "desirable difficulty"). The next time you hit a "why is this so hard" moment, you can read it differently: it is not that I am incapable; my brain is under construction.
+
+### Relation to "Painless Repetition"
+
+"Desirable difficulty" here and "The Three Laws of Growth" / "The 'Painless Repetition' Strategy" above look opposed but in fact govern different links of the same process: painless repetition governs **whether this practice happens at all**, lowering the activation threshold and the psychological burden; desirable difficulty governs **whether this practice is effective**, deliberately making the practice more effortful once your capacity can carry it. A lower threshold does not mean the task itself has no difficulty—difficulty grows naturally, protected by the low threshold of the previous stage.
+
+### Five Practices
+
+1. **Run a repetition audit.** On a quiet evening, write down the five things you actually repeat most each day—not what you wish you did every day, but what you actually do. Then look at the list and ask: if the brain will make these five things more and more practiced, what kind of person will I be a year from now? This list is the training plan your brain is executing right now. This step requires no change; first see your daily behavioral pattern clearly.
+2. **Use "small and focused" instead of "big and distracted."** Take twenty-five minutes a day for one thing you want to practice; put the phone in another room; do nothing else at the same time; stop when the time is up, even if you feel you could continue. Twenty-five minutes is a widely adopted unit of focus, and these twenty-five genuinely focused minutes beat two hours of practicing while playing.
+3. **Deliberately make one thing "matter."** The brain changes only for what matters, so actively manufacture a reason for something to matter: connect it to a specific person (promise a friend you will explain what you learned next week), connect it to what you genuinely care about (learning English not for a streak, but to read primary sources in a field you are obsessed with), or set yourself a small external deadline. All of these are really answering one question for the brain: why is this thing worth changing me?
+4. **After practicing, leave the brain some blank space.** People who closed their eyes and rested quietly for ten minutes after hearing a story remembered clearly more a week later than those who immediately went to play a spot-the-difference game. After learning something or practicing something, do not immediately pick up the phone; stare into space for a few minutes, or step outside for a walk—these few minutes look like nothing, but the brain is saving. Sleep matters for the same reason: studying late into the night often leaves the brain no time to archive.
+5. **Do not fight old patterns head-on; try switching their track.** For patterns like rumination, habitual anxiety, or fleeing whenever something comes up, the first reaction for many people is to control themselves and not think about it, but the harder you struggle with it, the more you are attending to it—and therefore the more you are practicing it. A better way is to attach a new action the moment the old pattern starts: stand up and pour a glass of water, take ten deep breaths, or write the matter on paper and then go do the next thing. At first, blocking it one or two times out of ten is good enough; those one or two times are the first signals the new pathway receives. You do not need to destroy the old road; you only need to walk more new ones.
 
 ---
 
