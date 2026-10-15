@@ -5,21 +5,68 @@
 
 ## Core Thesis
 
-Language choice is reordered on the generator side by verification cost. For a human the threshold is expression cost — learning syntax, memorizing APIs, setting up an environment; for an LLM the threshold is verification cost — what it costs to decide, after the fact, whether the output is correct. The two thresholds point in opposite directions, so the language that is easiest for a human is often the most expensive one for an LLM to verify.
+Large-scale tests agree: LLMs generate Python with a high hit rate, while Rust is hard to get right in one shot. That is where "LLMs suit dynamic languages" gets its evidence.
 
-The criterion:
+But in real scenarios, getting it right in one shot counts for very little. No AI coding tool treats it as a working assumption — harness engineering exists precisely because it does not hold. There is one core concern: whether the code it finally produces is reliable.
+
+Reliability rests on the verification mechanism — whether errors can be decided mechanically. The rigor of the type system sets how far that judgment reaches.
+
+Rigor is not enough either; the next question is whether the defenses can be bypassed. TypeScript's type system is just as strong, but `any` and `@ts-ignore` switch the whole check off in one line.
+
+The two thresholds point in opposite directions: a human picks a language by expression cost — learning syntax, memorizing APIs, setting up an environment; a generator picks by verification cost — what it costs to decide, after the fact, whether the output is correct. So the language easiest for a human is often the most expensive one for a generator to verify. The criterion converges to two factors, each taken in its structural form:
 
 ```
 LLM programming efficiency = explicitness × mechanical verifiability
 ```
 
-What matters is not getting it right the first time (that does not hold over long-horizon tasks), but whether the cost of deciding right from wrong can be pushed down. Both factors have to be taken in their structurally non-bypassable form.
+Explicitness means a self-contained structure, not token density; mechanical verifiability means non-bypassable, not "it has types".
 
 Scope limit: this criterion holds only for code that survives past one session. The territory of dynamic languages does not disappear because of it, but the reason has to change — not "fast to write" (that startup friction is paid by the human, not by the generator), but ecosystem: the data and AI libraries, and the system-automation libraries for operating the computer.
 
-## Escape Hatches: Flexibility Becomes a Loss-of-Control Entry Point
+## Verification Mechanism: Rigor of the Type System
 
-An escape hatch is the low-cost exit a language leaves open for bypassing its own strict constraints. For a human it is flexibility, a way out when the business logic gets complicated; for a generator it is a loss-of-control entry point, because generation is sampling over probability paths: when type inference or the borrow checker blocks it repeatedly, the output distribution collapses toward "whatever passes the check", and that shape is usually the escape hatch.
+The concrete shape of the reversed threshold: dynamic typing is a tax on the generator. Type information is deleted from the code; the human fills it in from context, the generator can only guess, and a wrong guess blows up at runtime. A type system is the scaffolding in the other direction — the signature is the contract, `Result<T, E>` forces the error path to be handled, and every compile is one full static verification pass.
+
+Verification separability changes with it. In a static language errors are localizable: the fix loop is "compiler reports → change here", short and deterministic. In a dynamic language errors are global and behavioral: the code runs but the semantics are wrong, so it has to be executed with tests written to find out; the loop is long and uncertain. When a generator invents an API that does not exist, nothing in the Python ecosystem intercepts it; cargo rejects it outright.
+
+There is a categorical gap between the coverage of properties and of behavior, and Dijkstra's assertion supplies the logical foundation:
+
+> "Program testing can be used to show the presence of bugs, but never to show their absence!"
+> — [Notes on Structured Programming (EWD249)](https://www.cs.utexas.edu/~EWD/ewd02xx/EWD249.PDF), 1970, corollary to the first part of §3 "On the reliability of mechanisms". The same assertion was restated in 1972 in [The Humble Programmer (EWD340)](https://www.cs.utexas.edu/%7EEWD/transcriptions/EWD03xx/EWD340.html) as testing being hopelessly inadequate for showing absence.
+
+Unpacked:
+
+- Testing is sampling: seeing a counterexample proves presence, not seeing one does not prove absence. Raising coverage does not change this property — exhausting the input space stops being sampling, that is model checking, and its cost explodes with the state space.
+- Proving absence can only go by deduction (proof by contradiction), and type checking is exactly such a deduction chain: it does not enumerate samples, it makes one universal judgment over all execution paths, and its conclusion covers every possible execution of the code.
+- The guarantee attaches differently. A type guarantee attaches to the code itself — any later change is re-guarded by the compiler, one edit and the full check runs again. "Tests pass" is a transient guarantee: it describes the sampled result of one execution, it has to be re-established the moment the code moves, and it decays on delivery.
+- The distribution of real problems corroborates the gap. The overwhelming majority of problems sit at untyped spots, not elsewhere; the correctness of business logic itself belongs to the domain humans are good at, and the same applies once AI writes the code. Type checking's coverage lands exactly where problems are densest — the source of its cost-effectiveness, and where Rust's barrier sits.
+
+Compiling is not the same as running correctly. What a type system guarantees is properties — memory safety, absence of data races, error paths made explicit; behavior is still in the hands of tests. Code that forbids `unsafe` and passes every type check can still crash at runtime:
+
+```rust
+use std::cell::RefCell;
+
+fn main() {
+    let c = RefCell::new(0u8);
+    let a = c.borrow();
+    let b = c.borrow_mut();
+    println!("{}", *a + *b);
+}
+```
+
+```
+$ cargo run
+thread 'main' panicked at src/main.rs:6:15:
+RefCell already borrowed
+```
+
+So "it compiles, therefore it runs correctly" does not hold: at the property level the type system is unbounded, at the behavior level tests still carry the load. The former removes the largest single class from the space tests would otherwise have to cover (errors at untyped spots) — that is where its value lies, not in being responsible for behavior.
+
+The failure mode of self-written, self-verified code lives in the same place. Let the same generator write the tests and tests and production code occupy one distribution: the counterexamples it cannot think of will not appear in the tests either; and under the objective of turning CI green, editing an assertion is cheaper than fixing the logic. The root cause is not insufficient adversarial pressure but **verifier and generator sharing a distribution** — verification is worth something only when it comes from a source other than the generator. A compiler works precisely because it is a verdict from outside the artifact: it takes no part in generation, cannot be negotiated with, and cannot be rewritten.
+
+## Bypass: The Signal-to-Noise Ratio of Escape Hatches
+
+But a compiler can only judge what the language hands it: the low-cost exits a language leaves open for bypassing its own strict constraints are its escape hatches. For a human an escape hatch is flexibility, a way out when the business logic gets complicated; for a generator it is a loss-of-control entry point, because generation is sampling over probability paths: when type inference or the borrow checker blocks it repeatedly, the output distribution collapses toward "whatever passes the check", and that shape is usually the escape hatch.
 
 There is no motive to discuss here. The generator is not a subject that wants to slack off; what a hatch does is make bypassing the least-resistance path — change the cost structure, and the behavior follows.
 
@@ -52,32 +99,22 @@ indexing_slicing = "deny"
 - `indexing_slicing` covers out-of-bounds panics such as `v[i]`.
 - `#![forbid(unsafe_code)]` is still worth adding, but it guards the rare cut and does not replace the group above.
 
-Compiling is not the same as running correctly, which is the other half of the same question. What a type system guarantees is properties — memory safety, absence of data races, error paths made explicit; behavior is still in the hands of tests. Code that forbids `unsafe` and passes every type check can still crash at runtime:
+## Explicitness: Whether the Structure Is Self-Contained
 
-```rust
-use std::cell::RefCell;
+Rigor and non-bypassability both take effect after the output exists; the input side holds the other half — whether the structure is self-contained. Explicitness is not about expressiveness but about that self-containment: complete types (the signature is its own documentation), brace delimiters (block boundaries physically pinned down, the AST easy to parse, immune to invisible characters), explicit introducer markers (`let` reads as a variable binding at a glance). These small input costs buy lexical boundaries that stay stable and semantics that need no contextual guessing, directly reducing interpretive ambiguity — there is no implicit state in the context window to be filled in. → Mechanism in [Modern Language Design](modern-language-design-en.md). The counterexample is Haskell: highest token density, lowest explicitness (typeclass resolution, operators and lazy evaluation are all implicit semantics); density cannot save it.
 
-fn main() {
-    let c = RefCell::new(0u8);
-    let a = c.borrow();
-    let b = c.borrow_mut();
-    println!("{}", *a + *b);
-}
-```
+Convergent conclusion: the optimal language choice for humans and for AI is converging — both move toward languages where the compiler carries verification. Humans reached that conclusion years ago (type systems, IDE feedback loops); the generator only turns it from a preference into a necessity.
 
-```
-$ cargo run
-thread 'main' panicked at src/main.rs:6:15:
-RefCell already borrowed
-```
+Scope limits:
 
-So "it compiles, therefore it runs correctly" does not hold: at the property level the type system is unbounded, at the behavior level tests still carry the load. The former removes the largest single class from the space tests would otherwise have to cover (errors at untyped spots) — that is where its value lies, not in being responsible for behavior.
-
-The failure mode of self-written, self-verified code lives in the same place. Let the same generator write the tests and tests and production code occupy one distribution: the counterexamples it cannot think of will not appear in the tests either; and under the objective of turning CI green, editing an assertion is cheaper than fixing the logic. The root cause is not insufficient adversarial pressure but **verifier and generator sharing a distribution** — verification is worth something only when it comes from a source other than the generator. A compiler works precisely because it is a verdict from outside the artifact: it takes no part in generation, cannot be negotiated with, and cannot be rewritten.
+- The surviving advantage of dynamic languages narrows to ecosystem, not runtime laxity. Using Python to operate the computer (system automation, calling ready-made libraries) is more convenient and more robust than bash; the library monopoly in data and AI remains a hard fact.
+- Delivery form is an advantage too, and it does not shrink on the generator side: a dynamic language's artifact is the source text itself — it can be versioned as a directory under git (diff, review and versioning for free), stored directly in a database column, and run as-is on any platform that has an interpreter. A static language's artifact is a platform-specific binary, so managing it needs a separate artifact surface (object storage or file storage, plus versioning and checksums), and cross-platform delivery means building per target. Code a generator writes enters that same delivery chain.
+- "Fast verification" is not an advantage. Python's low startup friction means you can start writing in a file you just created — that is human friction: picking a location, choosing a name, creating a project, configuring dependencies. The generator does not pay that friction, and single-file script mode (rust-script) is closing the difference on the human side as well. The dividing line is "code that survives past one session: the type system returns positive".
+- The ecosystem disadvantage of static languages can be turned around: a Rust core calls into the Python ecosystem through PyO3, or unstable exploratory logic lives as a Python plugin beside the Rust core. Polars / Ruff is the same pattern in reverse — Rust accelerates the kernel, Python exposes the interface. Rust's tax on a generator lies in the ecosystem rather than the language (macro expansion, trait and generic diagnostics, async runtime complexity) and is a toolchain-maturity problem that converges over time; the structural difference between dynamic and static does not.
 
 ## Human Weaknesses Are Not LLM Weaknesses
 
-Two common misprojections: adding human effort-pain and human anxiety onto the generator, then eliminating two language families on that basis.
+Objections to the criterion usually rest on two misprojections: adding human effort-pain and human anxiety onto the generator, then eliminating two language families on that basis.
 
 Verbose languages are unsuited to AI (Go / Java's weak spot). Humans find them tedious; a generator has no hands to tire. The real cost lies elsewhere: low expressiveness forces the same logic to be unfolded repeatedly (Go lacks generics, enums, error chains), so duplicated structure takes a larger share of the output and the density of useful information in the context drops — a matter of attention budget, not patience. The root cause sits in the language design tradeoff: give up type expressiveness for compile speed and syntactic simplicity, and the complexity does not disappear, it moves from compile time to runtime. → See [Go, Zig and Anti-Intellectualism](go-zig-anti-intellectualism-en.md).
 
@@ -89,36 +126,6 @@ Slow-compiling languages are unsuited to AI (Rust's reverse advantage). Humans d
 - The side effect is a good one: slow compilation forces large changes into small steps, and small steps are exactly the most reliable working granularity for a generator.
 
 "Unlimited patience" needs a qualifier. There is no emotional cost — that part holds. There is a hard constraint in context: the record of a failed attempt, once it enters the context, keeps biasing subsequent generation, so the number of retries has a ceiling. It is not unlimited.
-
-## The Criterion: Explicitness and Mechanical Verifiability
-
-The concrete shape of the reversed threshold: dynamic typing is a tax on the generator. Type information is deleted from the code; the human fills it in from context, the generator can only guess, and a wrong guess blows up at runtime. A type system is the scaffolding in the other direction — the signature is the contract, `Result<T, E>` forces the error path to be handled, and every compile is one full static verification pass.
-
-Verification separability changes with it. In a static language errors are localizable: the fix loop is "compiler reports → change here", short and deterministic. In a dynamic language errors are global and behavioral: the code runs but the semantics are wrong, so it has to be executed with tests written to find out; the loop is long and uncertain. When a generator invents an API that does not exist, nothing in the Python ecosystem intercepts it; cargo rejects it outright.
-
-There is a categorical gap between the coverage of properties and of behavior, and Dijkstra's assertion supplies the logical foundation:
-
-> "Program testing can be used to show the presence of bugs, but never to show their absence!"
-> — [Notes on Structured Programming (EWD249)](https://www.cs.utexas.edu/~EWD/ewd02xx/EWD249.PDF), 1970, corollary to the first part of §3 "On the reliability of mechanisms". The same assertion was restated in 1972 in [The Humble Programmer (EWD340)](https://www.cs.utexas.edu/%7EEWD/transcriptions/EWD03xx/EWD340.html) as testing being hopelessly inadequate for showing absence.
-
-Unpacked:
-
-- Testing is sampling: seeing a counterexample proves presence, not seeing one does not prove absence. Raising coverage does not change this property — exhausting the input space stops being sampling, that is model checking, and its cost explodes with the state space.
-- Proving absence can only go by deduction (proof by contradiction), and type checking is exactly such a deduction chain: it does not enumerate samples, it makes one universal judgment over all execution paths, and its conclusion covers every possible execution of the code.
-- The guarantee attaches differently. A type guarantee attaches to the code itself — any later change is re-guarded by the compiler, one edit and the full check runs again. "Tests pass" is a transient guarantee: it describes the sampled result of one execution, it has to be re-established the moment the code moves, and it decays on delivery.
-- The distribution of real problems corroborates the gap. The overwhelming majority of problems sit at untyped spots, not elsewhere; the correctness of business logic itself belongs to the domain humans are good at, and the same applies once AI writes the code. Type checking's coverage lands exactly where problems are densest — the source of its cost-effectiveness, and where Rust's barrier sits.
-- State the boundary clearly: at the property level, types are unbounded; at the behavior level, tests still carry the load. Types do not take over for tests — they remove the largest class from the space tests would have to cover.
-
-The second factor is explicitness, not expressiveness. What is decisive for a generator is not token density but whether the structure is self-contained: complete types (the signature is its own documentation), brace delimiters (block boundaries physically pinned down, the AST easy to parse, immune to invisible characters), explicit introducer markers (`let` reads as a variable binding at a glance). These small input costs buy lexical boundaries that stay stable and semantics that need no contextual guessing, directly reducing interpretive ambiguity — there is no implicit state in the context window to be filled in. → Mechanism in [Modern Language Design](modern-language-design-en.md). The counterexample is Haskell: highest token density, lowest explicitness (typeclass resolution, operators and lazy evaluation are all implicit semantics); density cannot save it.
-
-Convergent conclusion: the optimal language choice for humans and for AI is converging — both move toward languages where the compiler carries verification. Humans reached that conclusion years ago (type systems, IDE feedback loops); the generator only turns it from a preference into a necessity.
-
-Scope limits:
-
-- The surviving advantage of dynamic languages narrows to ecosystem, not runtime laxity. Using Python to operate the computer (system automation, calling ready-made libraries) is more convenient and more robust than bash; the library monopoly in data and AI remains a hard fact.
-- Delivery form is an advantage too, and it does not shrink on the generator side: a dynamic language's artifact is the source text itself — it can be versioned as a directory under git (diff, review and versioning for free), stored directly in a database column, and run as-is on any platform that has an interpreter. A static language's artifact is a platform-specific binary, so managing it needs a separate artifact surface (object storage or file storage, plus versioning and checksums), and cross-platform delivery means building per target. Code a generator writes enters that same delivery chain.
-- "Fast verification" is not an advantage. Python's low startup friction means you can start writing in a file you just created — that is human friction: picking a location, choosing a name, creating a project, configuring dependencies. The generator does not pay that friction, and single-file script mode (rust-script) is closing the difference on the human side as well. The dividing line is "code that survives past one session: the type system returns positive".
-- The ecosystem disadvantage of static languages can be turned around: a Rust core calls into the Python ecosystem through PyO3, or unstable exploratory logic lives as a Python plugin beside the Rust core. Polars / Ruff is the same pattern in reverse — Rust accelerates the kernel, Python exposes the interface. Rust's tax on a generator lies in the ecosystem rather than the language (macro expansion, trait and generic diagnostics, async runtime complexity) and is a toolchain-maturity problem that converges over time; the structural difference between dynamic and static does not.
 
 ## Rating by Language
 
