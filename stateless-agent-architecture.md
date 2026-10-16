@@ -22,7 +22,7 @@ f(session, user_input) -> session'
 
 | 组件 | 隐喻域 | 职责 | 形态 |
 |:--|:--|:--|:--|
-| **Krystallizer** | 结晶 | 会话真相唯一持有者：append-only 会话 + prefix checkpoint + 视图裁剪；技能图谱与涌现 | 记忆面（mem-core 嵌入或独立服务） |
+| **Krystallizer** | 结晶 | 会话真相唯一持有者：append-only 会话 + 自己的压缩点表 + 视图裁剪；技能图谱与涌现 | 记忆面（mem-core 嵌入或独立服务） |
 | **Prism** | 棱镜 | 入口：鉴权、请求解析、把 turn 投进场域。WS 网关 + CLI（包装 WS） | 基于 Aura，纯入口，无队列无状态 |
 | **Gravity** | 引力 | turn 执行器：取会话 → 跑 turn → 存增量。turn 被会话真相牵引运转；单趟执行（一个 turn 一趟），非常驻循环 | Aura 中的摊位类型（partition key = session_id）；自带 CLI 驱动循环，本地模式即循环执行 turn |
 | **Effector** | 探针 | 操作执行环境：容器化执行环境 + 操作执行器。接收下发的操作与参数（skill 对其不可见——skill 的解析与选择发生在 Gravity/LLM 侧），执行结果作为 tool result 回流 | Aura 基座组件，也可独立部署为远程服务 |

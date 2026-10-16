@@ -22,7 +22,7 @@ Theoretical basis: Aura's "API is stateful, operations are stateless" — `ctx.s
 
 | Component | Metaphor domain | Responsibility | Form |
 |:--|:--|:--|:--|
-| **Krystallizer** | Crystallization | Sole holder of session truth: append-only session + prefix checkpoint + view trimming; skill graph and emergence | Memory plane (mem-core embedded or standalone service) |
+| **Krystallizer** | Crystallization | Sole holder of session truth: append-only session + its own compression-point table + view trimming; skill graph and emergence | Memory plane (mem-core embedded or standalone service) |
 | **Prism** | Prism | Entry: authentication, request parsing, casting turns into the domain. WS gateway + CLI (wrapping WS) | Built on Aura, pure entry, no queue, stateless |
 | **Gravity** | Gravity | turn executor: fetch session → run turn → store delta. The turn is driven by session truth; single-pass execution (one turn per pass), not a resident loop | A stall type in Aura (partition key = session_id); ships with a CLI-driven loop, and local mode is just a loop executing turns |
 | **Effector** | Probe | Operating execution environment: containerized execution environment + operation executor. Receives dispatched operations and parameters (skills are invisible to it — skill resolution and selection happen on the Gravity/LLM side); execution results flow back as tool results | An Aura base component, also deployable standalone as a remote service |

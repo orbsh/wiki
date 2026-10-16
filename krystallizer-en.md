@@ -4,11 +4,11 @@
 
 *An embedded memory system combining session control + atomic fact graph + vector-landing retrieval: mechanisms and implementation design. For the conceptual positioning of the property graph, see [Graph Memory](graph-memory-en.md); for the general memory selection analysis, see [Memory Architecture](agent-memory-en.md); for the Surface architecture semantics, see [Stateless Agent Architecture](stateless-agent-architecture-en.md).*
 
-Krystallizer is a memory system extracted from skillforge `src/mem`, built on the [KV Storage Engine](kv-storage-engine-en.md) architecture: session-control primitives (branch / tail / summarize), an atomic fact graph (append-only KDL facts + weights), and vector landing from a built-in local model + graph traversal (ADR-0003 Update 2026-10-14 withdrew arroy / BM25 / RRF). An embedded Rust core (mem-core) + Python bindings (PyO3), with zero LLM dependency and zero transport dependency.
+Krystallizer is a memory system extracted from skillforge `src/mem`, built on the [KV Storage Engine](kv-storage-engine-en.md) architecture: session-control primitives (branch / tail / summarize), an atomic fact graph (append-first KDL facts + weights), and vector landing from a built-in local model + graph traversal (ADR-0003 Update 2026-10-14 withdrew arroy / BM25 / RRF). An embedded Rust core (mem-core) + Python bindings (PyO3), with zero LLM dependency and zero transport dependency.
 
-## Dual Interface Surfaces: Session Control and Memory
+## Interface Surfaces: Session Control, Memory, Tasks
 
-The memory system exposes, and only exposes, two interface surfaces (mechanism/policy separation — the core only answers "how", "when" belongs to the caller):
+The memory system exposes three interface surfaces (mechanism/policy separation — the core only answers "how", "when" belongs to the caller):
 
 ### Interface Surface 1: Session Control (the passive side · short-term)
 
@@ -41,6 +41,13 @@ Memory is not a per-mode accessory — it is independent of the consumption stan
 
 The old pair "full control mode / assist mode" is retired: it reads as "full mode makes assist redundant", which is false.
 
+### Interface Surface 3: Tasks (tasks are a graph)
+
+- **The carrier is a graph, not a table**: task vertices + `task_links` dependency edges (the task-forest shape: a task row per step, bound to the call that completes it). It is also the multi-agent coordination medium — the graph replaces message passing, and parallelism comes from topology rather than a scheduler.
+- **Tasks and facts share ONE graph** (same trust domain: don't split what can be joined); a task node type is a collection (ns is the type marker).
+- **Instance state (open / done) is a structured field** for exact enumeration ("how many open"), delivered with the projection — never through the approximate-retrieval pipeline.
+- **Who writes what**: k10r holds the task definition, its links and its structured state; the executing side writes completion at the call site — completion is never a model judgement.
+
 ## Session as Data (Stateless Agent)
 
 Architectural corollary of the passive (session) side: the agent loop degenerates into a pure function.
@@ -55,7 +62,7 @@ This is isomorphic to Aura's "stateful API, stateless operations" stance: sessio
 
 **View-layer trimming is a separate mechanism, not loop logic.** Trimming the function-call format out of the serialized view happens on the memory system's serialization path. The storage layer always holds the complete, untrimmed session; the view is trimmed, the storage is not, and trimming is strictly read-side only — any write-path trimming would fork "the stored session" and "the session the agent sees" into two truths.
 
-**Dissolution of memory calls (rejected)**. We once evaluated replacing memory-recall call records in the view with the recalled context. Rejected: the gain is just one saved round trip, while the cost is that the loop must know which calls are memory calls and rewrite context mid-turn — inserting records is the data layer's job, but rewriting mid-turn context becomes the loop's private chore, giving one class of function call privileged treatment inside the loop and breaking the append-only invariant. Whether or not dissolution is adopted, putting the behavior in the view layer holds; dissolution itself is not worth it.
+**Dissolution of memory calls (rejected)**. We once evaluated replacing memory-recall call records in the view with the recalled context. Rejected: the gain is just one saved round trip, while the cost is that the loop must know which calls are memory calls and rewrite context mid-turn — inserting records is the data layer's job, but rewriting mid-turn context becomes the loop's private chore, giving one class of function call privileged treatment inside the loop and breaking the "records belong to the data layer, the loop only appends" invariant. Whether or not dissolution is adopted, putting the behavior in the view layer holds; dissolution itself is not worth it.
 
 **The cache cost of dissolution is bounded (for reference)**. Prefix caching matches the longest common prefix per request, not the whole session at once. Dissolving the last two records (tool_call + tool_result) into one merged record only changes the tail; the hundred records before it are byte-identical and the cache hits as usual. The per-turn loss is limited to the replaced tail (a few KB of recomputation), the same mechanism as branch pruning: append + local tail change, with the prefix held stable. "Rewriting history invalidates the whole cache" is a misunderstanding — the rewrite point is just the tail.
 
@@ -108,7 +115,7 @@ Replaces the two approaches above. Core idea: compression is neither a separate 
 **Four-step closed loop**:
 1. **Intercept and trigger**: the memory system monitors the watermark; on reaching the threshold it marks a bypass on the fetch view, the preceding tokens stay absolutely unchanged, and both the main branch and the bypass hit the context cache 100%
 2. **Parallel fork**: Gravity issues two requests at once — the main branch `[H] + [user question]` streams an answer, the bypass `[H] + [compression instruction]` does nothing but compress
-3. **Bypass persistence**: the bypass's tool_call (memory_store + memory_checkpoint) is recognized and handled by Krystallizer at append time — the summary goes into the checkpoint, facts into the graph, and old messages are truncated; the output does not enter the conversation stream
+3. **Bypass persistence**: the bypass's tool_call (memory_checkpoint) is recognized and handled by Krystallizer at append time — the summary lands in the compression point, and the log is never truncated (compression advances coverage; the log is append-only); facts arrive separately, through the model's active add. The output does not enter the conversation stream
 4. **Gap switch**: before U_{n+1} arrives the session switches to `[S] + [recent segment]`, and S becomes the new stable prefix
 
 ```
@@ -143,28 +150,29 @@ Turn N+1:  history becomes [S] + [X] + [Y] + [U_{n+1}], all hits, start over
 
 ### Base Strategy: Checkpoint Compression
 
-Under the Prefix Checkpoint approach, compression runs on a bypass parallel to the main branch — when the threshold is reached, the bypass request forks from the immutable prefix and devotes itself to extraction and marking:
+Under the Prefix Checkpoint approach, compression runs on a bypass parallel to the main branch — when the threshold is reached, the bypass request forks from the immutable prefix and devotes itself to compression and marking:
 
 ```
 100 messages → bypass request [H] + [compression instruction]:
-  tool_call: memory_store(...)      ← the LLM decides actively, extracting long-term memory (flat or graph facts)
-  tool_call: memory_checkpoint(...) ← executed by the Agent framework, pure DB operations
-  (the main branch answers the user as usual at the same time, neither waiting for the other)
+  tool_call: memory_checkpoint(...) ← executed by the agent framework, a pure DB operation (the compression point)
+  (the main branch answers the user as usual, neither waits)
 ```
 
-#### One Bypass Call, Two Layers of Output
+**The bypass only compresses** (settled 2026-10-16): extracting facts no longer rides this pass — the model adds memory actively inside its own reasoning (see "The Extraction Mechanism" below and ADR-0008's Update).
+
+#### One Bypass Call, Two Layers of Output (the facts layer is retired, 2026-10-16)
 
 The core idea is unchanged: one LLM call produces two layers of output at once. Only the implementation changes from "outputting JSON directly" to "through a tool call", and the carrier changes from the answering turn to a dedicated bypass:
 
 | Dimension | Old approach (CheckpointCompressor) | Mixed into turn (old form) | Current approach (parallel bypass) |
 |:--|:--|:--|:--|
 | Trigger | Separate LLM call | prompt tail prompt → answered along with the answering turn | prefix marking → parallel bypass |
-| Output | LLM outputs JSON directly | answer + tool call crammed into the same turn | bypass tool call (memory_store + memory_checkpoint) |
+| Output | LLM outputs JSON directly | answer + tool call crammed into the same turn | bypass tool call (memory_checkpoint; facts are no longer here) |
 | Cache | Not shared (a new API call) | Shared (same turn) | Shared (forked from the same prefix) |
 | Attention | Focused | Dispersed | Focused |
-| Long-term memory | LLM extracts during the compression call | LLM extracts in the tool call | LLM extracts in the bypass tool call |
+| Long-term memory | LLM extracts during the compression call | LLM extracts in the tool call | The model's active add (not on the bypass) |
 
-All three try to produce two layers from one call; the current approach gets both: the cache hit of mixing into the turn + the focused attention of the pure append instruction, with user latency at zero.
+All three try to produce two layers from one call; the current approach gets both: the cache hit of mixing into the turn + the focused attention of the pure append instruction, with user latency at zero. (Since 2026-10-16 the bypass produces ONE layer — the compression point; facts come from the model's active add and no longer ride that call.)
 
 #### Extraction Format Evolution
 
@@ -173,7 +181,7 @@ All three try to produce two layers from one call; the current approach gets bot
 | Current (Phase 2.5) | flat | `{content, category, importance, tags}` |
 | Future (graphified) | graph facts | `{subject, predicate, object, category}` |
 
-The extraction mechanism is unchanged (the LLM calls the `memory_store` tool), only the output format changes from flat to structured.
+The extraction mechanism has changed to the **model's active add**: the model calls the memory tool while reasoning, not on the compression pass (ADR-0008 Update 2026-10-16); only the output format changes from flat to structured.
 
 **Serialization and visualization**: the authoritative format for atomic facts is **KDL** — one node per `fact`, with fixed `head`/`rel`/`tail` role child nodes:
 
@@ -219,9 +227,9 @@ You are a conversation compressor. Analyze the following conversation history an
    {"subject": "...", "predicate": "...", "object": "...", "category": "fact|rule|logic|preference"}
 ```
 
-**Dependency**: facts depend on the checkpoint — the LLM first understands the conversation and produces the summary, then extracts atomic facts based on the summary. In the early approach the two were independent outputs (no dependency); now that they are merged into a single call, the dependency arises naturally: the checkpoint is the global understanding of the conversation, and facts are the structured knowledge extracted from it.
+**Dependency (retired, 2026-10-16)**: facts used to depend on the checkpoint — first produce the summary, then extract atomic facts from it. No longer needed: facts are added actively by the model while reasoning, which is not the same pass as compression, so the checkpoint is not their precondition.
 
-This is a prompt design inside the `memory_store` tool and does not affect the overall Prefix Checkpoint flow.
+This is a prompt design inside the memory tool — not the same pass as Prefix Checkpoint's compression.
 
 ### Coding Scenario: Design Documents as a Codebase Checkpoint
 
@@ -373,7 +381,7 @@ dsh's session model and this system's design converged independently on the same
 ## Cross References
 
 - **[Graph Memory](graph-memory-en.md)**: the conceptual design of the atomic fact graph — computation-timing spectrum, clustering strategy, weight system, graphification Skill.
-- **[Graph Memory](graph-memory-en.md)**: read-time resolution of conflicts — append-only facts have no write conflicts, and logical conflicts are adjudicated by weight and subject attribution, not by write-time falsification.
+- **[Graph Memory](graph-memory-en.md)**: read-time resolution of conflicts — append-first facts have no write conflicts, and logical conflicts are adjudicated by weight and subject attribution, not by write-time falsification.
 - **[Memory Architecture](agent-memory-en.md)**: the general memory selection analysis — the two layers Surface/Engine, injection methods, comparison of external open-source approaches.
 - **[Stateless Agent Architecture](stateless-agent-architecture-en.md)**: the overall component architecture — turn model, parallel compression bypass, Surface architecture semantics, Prism/Gravity/Effector.
 - **[KV Storage Engine](kv-storage-engine-en.md)**: storage-layer hosting — property-graph encoding patterns, read-modify-write elimination, secondary index update strategies, WriteBatch transactions.

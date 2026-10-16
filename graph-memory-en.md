@@ -130,7 +130,7 @@ Document-style memory has three structural defects, which atomic facts resolve o
 
 **Relation implicitness**: relations in documents are established by the reader's inference—"A caused B" may be spread across two paragraphs. Atomized extraction may lose implicit relations, but this can be mitigated in two ways: identify implicit causal chains during extraction; support multi-hop traversal at query time (transitive reasoning A → B → C).
 
-**Update complexity**: a document update is an in-place modification, and the whole document must be read before the modification site can be found. Documents grow with updates, so each read grows, and the total read volume over n updates is O(n²). Atomic facts are append-only: new knowledge is written directly without reading old knowledge, so the total write volume over n updates is O(n). This is not only a performance issue but a correctness issue—the content read during a document update may already be stale (concurrent modification, cache inconsistency), whereas atomic appends have no race conditions.
+**Update complexity**: a document update is an in-place modification, and the whole document must be read before the modification site can be found. Documents grow with updates, so each read grows, and the total read volume over n updates is O(n²). Atomic facts are append-first: new knowledge is written directly without reading old knowledge, so the total write volume over n updates is O(n). This is not only a performance issue but a correctness issue—the content read during a document update may already be stale (concurrent modification, cache inconsistency), whereas atomic appends have no race conditions.
 
 | Dimension | Document | Atomic fact |
 |:--|:--|:--|
@@ -139,7 +139,7 @@ Document-style memory has three structural defects, which atomic facts resolve o
 | Query method | Keyword/vector (probabilistic) | Graph traversal (deterministic) |
 | Relation explicitness | Implicit (requires inference) | Explicit (stored directly) |
 | Reference accuracy | Degrades with modification | Permanently accurate |
-| Update complexity | O(n²) (in-place modification requires reading the full text) | O(n) (append-only, no reading of the old) |
+| Update complexity | O(n²) (in-place modification requires reading the full text) | O(n) (append-first, no reading of the old) |
 
 ### The Retrieval Dilemma of Atomic Facts
 
@@ -154,11 +154,11 @@ The consequence of too-fine granularity is not merely "fragmentation"—retrieva
 The solution is not to choose "atomic facts" or "summary documents" but to do both—the storage layer is atomized, the retrieval layer aggregates into clusters.
 
 ```
-Write layer (atomic):      one edge = one fact, append-only           
+Write layer (atomic):      one edge = one fact, append-first
 ↓
 Organize layer (cluster):  related edges grouped by entity/event/topic
 ↓
-Retrieve layer (view):     return by cluster, not loose edges         
+Retrieve layer (view):     return by cluster, not loose edges
 ```
 
 Analogous to a database: raw rows are atomic, materialized views are aggregated. Queries go to the view, writes go to the row.
@@ -437,7 +437,7 @@ Traditional memory designs (LangChain, Mem0, etc.) treat conflict as a system fa
 
 ### Writes Have No Conflicts
 
-Facts are an append-only record of objective events. Two opposite facts (different budget amounts, opposing architecture decisions) are two independent appends in physical storage; there is no write conflict—appends are naturally lock-free (see [KV Storage Engine](kv-storage-engine-en.md) §read-modify-write: delta appends eliminate the RMW race). Logical conflict exists only at the moment the reader assembles the view; the write layer never separates truth from falsehood.
+Facts are an append-first record of objective events. Two opposite facts (different budget amounts, opposing architecture decisions) are two independent appends in physical storage; there is no write conflict—appends are naturally lock-free (see [KV Storage Engine](kv-storage-engine-en.md) §read-modify-write: delta appends eliminate the RMW race). Logical conflict exists only at the moment the reader assembles the view; the write layer never separates truth from falsehood.
 
 ### Resolution Relies on Weights and Routing, Not on Write-Time Adjudication
 
@@ -445,7 +445,7 @@ Facts are an append-only record of objective events. Two opposite facts (differe
 - **Actor/domain attribution**: each fact node carries the subject to which it belongs. If opposite statements of the same question belong to different subjects, they are not a conflict but two positions—the retriever adopts according to its own perspective, and the two coexist in the graph.
 - **Derived views at retrieval time**: retrieval (vector landing + graph traversal) returns a set of facts ranked by the current query context, and the view is assembled at read time. The same graph derives different views for different queries—this is a direct corollary of "read-time computing" in conflict resolution.
 
-This stance is consistent with the computational-timing spectrum: conflict resolution is a read-time operation. Moving it to write time (separating truth, overwriting, RMW rewriting) means giving up all the benefits of append-only and returning to the old path of traditional designs.
+This stance is consistent with the computational-timing spectrum: conflict resolution is a read-time operation. Moving it to write time (separating truth, overwriting, RMW rewriting) means giving up all the benefits of append-first and returning to the old path of traditional designs.
 
 ## Graph Skills
 
@@ -669,7 +669,7 @@ The **instance state** of tasks does not enter the write-time-heavy graph, but t
 - What the graph replaces is **state synchronization**, not **decision consensus**. "What it is, where it is stuck, which item is missing" the graph can carry; "why do it this way" relies on references in the type layer (templates, preconditions, experience edges). When the type layer is left empty, graph coordination degrades into replacing meetings with collective silence—information disconnection exists in another form.
 - The coordination medium requires **strong consistency** of state transitions: when multiple agents concurrently claim/update the same task, without conditional updates (CAS or a single-writer reducer) the coordination surface drifts first. The task table is the natural candidate for "control-plane single writer".
 
-**Parallelism comes from topology, not from the scheduler.** Two task nodes with no dependency are naturally concurrent on the graph: Gravity starts from the current event and performs one topological pruning along `task_links` (nodes without a strong `DEPENDS_ON` dependency branch off and execute independently); the unit of parallelism is the branch structure of the graph, not the message orchestration between agents. This is isomorphic to the compression parallel bypass—the same prefix branches into multiple independent execution branches, each appending its own writes without overwriting others. The precondition for concurrency safety falls on append-only writes: facts are appended into the graph as deltas (see §"Read-Time Conflict Resolution"), with no write conflict at the physical layer; concurrent updates of task instance state are still bound by the strong consistency of the coordination surface (the CAS condition above).
+**Parallelism comes from topology, not from the scheduler.** Two task nodes with no dependency are naturally concurrent on the graph: Gravity starts from the current event and performs one topological pruning along `task_links` (nodes without a strong `DEPENDS_ON` dependency branch off and execute independently); the unit of parallelism is the branch structure of the graph, not the message orchestration between agents. This is isomorphic to the compression parallel bypass—the same prefix branches into multiple independent execution branches, each appending its own writes without overwriting others. The precondition for concurrency safety falls on append-first writes: facts are appended into the graph as deltas (see §"Read-Time Conflict Resolution"), with no write conflict at the physical layer; concurrent updates of task instance state are still bound by the strong consistency of the coordination surface (the CAS condition above).
 
 **Organizational ledger (audit surface).** When most of the work in a project goes through the task graph, who / when / which task / what become structured facts—the task table is the organization's event log, and artifacts like weekly reports and standups are its lossy compression. Tracking after agents take on work is a zero-cost byproduct, provided each record carries attribution fields (actor identity + timestamp), otherwise the ledger is not trustworthy. The same data serves two purposes: for the agent it is a coordination medium, for the organization it is project management.
 
