@@ -429,7 +429,7 @@ High-weight edges are returned first at query time. Low-weight edges are not del
 
 ### The Write-Read Loop and the Extraction Mechanism
 
-The write-read loop, the three designs of the extraction mechanism (parallel extraction → pure append instructions → Prefix Checkpoint), the details of checkpoint compression, the KDL serialization format, the extraction prompt, and the isomorphism of encoding scenarios—these belong to implementation mechanisms and have been moved to [Krystallizer](krystallizer-en.md), where the original content is preserved in full.
+The write-read loop, the three designs of the extraction mechanism (parallel extraction → pure append instructions → Prefix Checkpoint), the details of checkpoint compression, the fact serialization format, the extraction prompt, and the isomorphism of encoding scenarios—these belong to implementation mechanisms and have been moved to [Krystallizer](krystallizer-en.md), where the original content is preserved in full.
 
 ## Read-Time Conflict Resolution
 

@@ -364,7 +364,7 @@ A local call (an in-domain function) and a remote call (tool execution on an Eff
 
 ### skill Emergence Loop
 
-A skill is not a static file but a subgraph of high tool index in Krystallizer's graph (KDL atomic facts + weight system). The loop:
+A skill is not a static file but a subgraph of high tool index in Krystallizer's graph (9-slot-tuple atomic facts + weight system). The loop:
 
 ```
 Execution experience (pitfalls/solutions/operation sequences) → stored in the graph (atomic facts)

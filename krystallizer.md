@@ -4,7 +4,7 @@
 
 *会话控制 + 原子事实图 + 向量着陆检索的嵌入式记忆系统：机制与实现设计。属性图的概念定位见 [图谱化记忆](graph-memory.md)，通用记忆选型分析见 [Agent 记忆选型](agent-memory.md)，Surface 架构语义见 [无状态 Agent 架构](stateless-agent-architecture.md)。*
 
-Krystallizer 是从 skillforge `src/mem` 独立出来的记忆系统，落在 [KV 存储引擎](kv-storage-engine.md)架构上：会话控制原语（branch / tail / summarize）、原子事实图（追加优先的 KDL 事实 + 权重）、内置本地小模型的向量着陆 + 图遍历（ADR-0003 Update 2026-10-14 撤销了 arroy / BM25 / RRF 那一路）。嵌入式 Rust 核心（mem-core）+ Python 绑定（PyO3），零 LLM 依赖、零传输依赖。
+Krystallizer 是从 skillforge `src/mem` 独立出来的记忆系统，落在 [KV 存储引擎](kv-storage-engine.md)架构上：会话控制原语（branch / tail / summarize）、原子事实图（追加优先的事实，定长 9 元组 + 权重）、内置本地小模型的向量着陆 + 图遍历（ADR-0003 Update 2026-10-14 撤销了 arroy / BM25 / RRF 那一路）。嵌入式 Rust 核心（mem-core）+ Python 绑定（PyO3），零 LLM 依赖、零传输依赖。
 
 ## 接口面：会话控制、记忆、任务
 
@@ -179,35 +179,29 @@ Prefix Checkpoint 方案下，压缩走与主分支并行的旁路——阈值�
 | 阶段 | 提取格式 | 输出 |
 |:--|:--|:--|
 | 当前（Phase 2.5） | flat | `{content, category, importance, tags}` |
-| 未来（图谱化） | graph facts | `{subject, predicate, object, category}` |
+| 未来（图谱化） | graph facts | 定长 9 元组：三个角色各 `[值, 类型, 属性]` |
 
 提取机制已改为**模型的主动添加**：模型在推理中调记忆工具，不搭压缩的那一趟（ADR-0008 Update 2026-10-16），输出格式从 flat 变为 structured。
 
-**序列化与可视化**：原子事实权威格式为 **KDL**——每个 `fact` 一个节点，固定 `head`/`rel`/`tail` 三个角色子节点：
+**序列化与可视化**：原子事实的权威格式是**定长 9 元组**（JSON 列表）——三个角色按 head / rel / tail 顺序排列，每个角色是 `[值, 类型, 属性]`：
 
-```kdl
-fact {
-  head  <类型> <实体值> [head_props]
-  rel   <关系> [relation_arg] [relation_props]
-  tail  <类型> <实体值> [tail_props]
-}
+```text
+[<head 值>, <head 类型>, <head 属性>, <关系>, <关系类型>, <关系属性>, <tail 值>, <tail 类型>, <tail 属性>]
 ```
 
-- `head`/`tail`：arg0 = 类型标签（小写单 token），arg1 = 实体值（有空格才引号）；节点 props = 实体的属性
-- `rel`：arg0 = 关系（大写下划线）；节点 props = 关系的修饰（时间 / 条件 / 原因 / 强度）
-- **空 props 不写**；类型词表开放
+- `head`/`tail`：值 = 实体值；类型 = 类型标签（小写单 token）；属性 = 实体的属性
+- `rel`：值 = 关系（大写下划线）；类型 = 关系类型标签（小写单 token）；属性 = 关系的修饰（时间 / 条件 / 原因 / 强度）
+- **空属性写 `{}`**——定长，槽位不省略；类型词表开放
 
-示例（`head_props`/`relation_props`/`tail_props` 全带 + 规则/逻辑类关系）：
+示例（三个角色各带属性 + 规则/逻辑类关系）：
 
-```kdl
-fact {
-  head  project "银河"  priority=high
-  rel   IMPLIES reason="受控写放大、保留因果链"  confidence=0.9
-  tail  architecture "事件溯源"  status=chosen since="2026-08"
-}
+```json
+["银河项目", "project", {"priority": "high"},
+ "IMPLIES", "architecture", {"confidence": "0.9", "since": "2026-10"},
+ "事件溯源", "architecture", {"status": "chosen"}]
 ```
 
-KDL 可确定性转换为 Mermaid 和 Cytoscape.js 渲染（不需要 LLM 参与；bracket `head[TYPE]RELATION[props]tail[TYPE]` 仅作线内展示）。Mermaid 用 dagre 层次化布局（适合检查原子事实提取是否正确），Cytoscape.js 用力导向布局（适合检查聚簇效果）。两者同一输入、两个输出。
+元组可确定性转换为 Mermaid 和 Cytoscape.js 渲染（不需要 LLM 参与；bracket `head[TYPE]RELATION[props]tail[TYPE]` 仅作线内展示）。Mermaid 用 dagre 层次化布局（适合检查原子事实提取是否正确），Cytoscape.js 用力导向布局（适合检查聚簇效果）。两者同一输入、两个输出。
 
 #### 缓存利用
 
@@ -224,7 +218,7 @@ Prefix Checkpoint 的缓存优势：checkpoint 不可变，可永久缓存。增
 
 1. checkpoint：用 2-3 句话概括这段对话的核心内容、关键决策和当前状态
 2. facts：提取值得长期记住的信息，格式：
-   {"subject": "...", "predicate": "...", "object": "...", "category": "fact|rule|logic|preference"}
+   每行一条定长 9 元组：["<head 值>", "<head 类型>", {}, "<关系>", "<关系类型>", {}, "<tail 值>", "<tail 类型>", {}]
 ```
 
 **依赖关系（已退役，2026-10-16）**：事实曾依赖 checkpoint——先出摘要、再基于摘要提取原子事实。现在不需要：事实由模型在推理中主动添加，与压缩不是同一趟，checkpoint 也就不是它的前置。
@@ -347,7 +341,7 @@ LLM 双层输出的第二层从 flat memories 变为 graph triples：
   memories: [{"content": "...", "category": "fact", "importance": 3, "tags": [...]}]
 
 图谱化输出：
-  triples: [{"subject": "...", "predicate": "...", "object": "...", "category": "fact|rule|logic|preference"}]
+  triples: ["<head 值>", "<head 类型>", {}, "<关系>", "<关系类型>", {}, "<tail 值>", "<tail 类型>", {}]
 ```
 
 一次 LLM 调用双层输出的模式不变，只是第二层的输出格式从 flat 变成 structured。

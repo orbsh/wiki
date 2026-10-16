@@ -408,7 +408,7 @@ time_decay  = days_since_last_access × 0.01  # 缓慢衰减
 
 ### 写入-读取循环与提取机制
 
-写入-读取循环、提取机制的三个方案（并行提取 → 纯追加指令 → Prefix Checkpoint）、checkpoint 压缩细节、KDL 序列化格式、提取 Prompt、编码场景同构——这些属于实现机制，已移至 [Krystallizer](krystallizer.md)，原内容完整保留在那里。
+写入-读取循环、提取机制的三个方案（并行提取 → 纯追加指令 → Prefix Checkpoint）、checkpoint 压缩细节、事实序列化格式、提取 Prompt、编码场景同构——这些属于实现机制，已移至 [Krystallizer](krystallizer.md)，原内容完整保留在那里。
 
 ## 冲突的读时消解
 

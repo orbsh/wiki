@@ -272,7 +272,7 @@ From conversation to memory conversion, two formats:
 | Format | Structure | Use Case |
 |:--|:--|:--|
 | **flat KV** | content + category + importance + tags | Simple preferences/facts, current implementation |
-| **graph triples** | subject + predicate + object + category | Knowledge with relational structure, graph evolution direction |
+| **graph triples** | a fixed-length 9-slot tuple: three roles, each `[value, type, props]` | Knowledge with relational structure, graph evolution direction |
 
 Both formats can be output simultaneously in a single LLM call (dual-layer output):
 
@@ -425,7 +425,7 @@ Current output:
   memories: [{"content": "...", "category": "fact", "importance": 3, "tags": [...]}]
 
 Graph output:
-  triples: [{"subject": "...", "predicate": "...", "object": "...", "category": "fact|rule|logic|preference"}]
+  triples: ["<head value>", "<head type>", {}, "<RELATION>", "<rel type>", {}, "<tail value>", "<tail type>", {}]
 ```
 
 The single LLM call dual-layer output pattern unchanged, only the second layer's output format changes from flat to structured.

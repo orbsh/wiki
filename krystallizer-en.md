@@ -4,7 +4,7 @@
 
 *An embedded memory system combining session control + atomic fact graph + vector-landing retrieval: mechanisms and implementation design. For the conceptual positioning of the property graph, see [Graph Memory](graph-memory-en.md); for the general memory selection analysis, see [Memory Architecture](agent-memory-en.md); for the Surface architecture semantics, see [Stateless Agent Architecture](stateless-agent-architecture-en.md).*
 
-Krystallizer is a memory system extracted from skillforge `src/mem`, built on the [KV Storage Engine](kv-storage-engine-en.md) architecture: session-control primitives (branch / tail / summarize), an atomic fact graph (append-first KDL facts + weights), and vector landing from a built-in local model + graph traversal (ADR-0003 Update 2026-10-14 withdrew arroy / BM25 / RRF). An embedded Rust core (mem-core) + Python bindings (PyO3), with zero LLM dependency and zero transport dependency.
+Krystallizer is a memory system extracted from skillforge `src/mem`, built on the [KV Storage Engine](kv-storage-engine-en.md) architecture: session-control primitives (branch / tail / summarize), an atomic fact graph (append-first facts, a fixed-length 9-slot tuple + weights), and vector landing from a built-in local model + graph traversal (ADR-0003 Update 2026-10-14 withdrew arroy / BM25 / RRF). An embedded Rust core (mem-core) + Python bindings (PyO3), with zero LLM dependency and zero transport dependency.
 
 ## Interface Surfaces: Session Control, Memory, Tasks
 
@@ -179,35 +179,29 @@ All three try to produce two layers from one call; the current approach gets bot
 | Stage | Extraction format | Output |
 |:--|:--|:--|
 | Current (Phase 2.5) | flat | `{content, category, importance, tags}` |
-| Future (graphified) | graph facts | `{subject, predicate, object, category}` |
+| Future (graphified) | graph facts | a fixed-length 9-slot tuple: three roles, each `[value, type, props]` |
 
 The extraction mechanism has changed to the **model's active add**: the model calls the memory tool while reasoning, not on the compression pass (ADR-0008 Update 2026-10-16); only the output format changes from flat to structured.
 
-**Serialization and visualization**: the authoritative format for atomic facts is **KDL** — one node per `fact`, with fixed `head`/`rel`/`tail` role child nodes:
+**Serialization and visualization**: the authoritative format for atomic facts is a **fixed-length 9-slot tuple** (a JSON list) — the three roles in order head / rel / tail, each `[value, type, props]`:
 
-```kdl
-fact {
-  head  <type> <entity-value> [head_props]
-  rel   <relation> [relation_arg] [relation_props]
-  tail  <type> <entity-value> [tail_props]
-}
+```text
+[<head value>, <head type>, <head props>, <RELATION>, <rel type>, <rel props>, <tail value>, <tail type>, <tail props>]
 ```
 
-- `head`/`tail`: arg0 = type label (lowercase single token), arg1 = entity value (quoted only if it contains spaces); node props = the entity's attributes
-- `rel`: arg0 = relation (uppercase with underscores); node props = the relation's modifiers (time / condition / cause / strength)
-- **Empty props are not written**; the type vocabulary is open
+- `head`/`tail`: value = the entity value; type = the type label (lowercase single token); props = the entity's attributes
+- `rel`: value = the relation (uppercase with underscores); type = the relation's type label (lowercase single token); props = the relation's modifiers (time / condition / cause / strength)
+- **Empty props are written `{}`** — fixed length, no slot omitted; the type vocabulary is open
 
-Example (`head_props`/`relation_props`/`tail_props` all present + a rule/logic-type relation):
+Example (all three roles carry props + a rule/logic-type relation):
 
-```kdl
-fact {
-  head  project "Galaxy"  priority=high
-  rel   IMPLIES reason="controlled write amplification, preserving the causal chain"  confidence=0.9
-  tail  architecture "event sourcing"  status=chosen since="2026-08"
-}
+```json
+["Galaxy project", "project", {"priority": "high"},
+ "IMPLIES", "architecture", {"confidence": "0.9", "since": "2026-10"},
+ "event sourcing", "architecture", {"status": "chosen"}]
 ```
 
-KDL converts deterministically to Mermaid and Cytoscape.js rendering (no LLM involvement needed; the bracket `head[TYPE]RELATION[props]tail[TYPE]` is only for inline display). Mermaid uses a dagre hierarchical layout (good for checking whether atomic-fact extraction is correct), and Cytoscape.js uses a force-directed layout (good for checking clustering effects). The same input, two outputs.
+The tuple converts deterministically to Mermaid and Cytoscape.js rendering (no LLM involvement needed; the bracket `head[TYPE]RELATION[props]tail[TYPE]` is only for inline display). Mermaid uses a dagre hierarchical layout (good for checking whether atomic-fact extraction is correct), and Cytoscape.js uses a force-directed layout (good for checking clustering effects). The same input, two outputs.
 
 #### Cache Utilization
 
@@ -224,7 +218,7 @@ You are a conversation compressor. Analyze the following conversation history an
 
 1. checkpoint: summarize the core content, key decisions and current state of this conversation in 2-3 sentences
 2. facts: extract information worth remembering long-term, in the format:
-   {"subject": "...", "predicate": "...", "object": "...", "category": "fact|rule|logic|preference"}
+   one fixed-length 9-slot tuple per line: ["<head value>", "<head type>", {}, "<RELATION>", "<rel type>", {}, "<tail value>", "<tail type>", {}]
 ```
 
 **Dependency (retired, 2026-10-16)**: facts used to depend on the checkpoint — first produce the summary, then extract atomic facts from it. No longer needed: facts are added actively by the model while reasoning, which is not the same pass as compression, so the checkpoint is not their precondition.
@@ -347,7 +341,7 @@ Current output:
   memories: [{"content": "...", "category": "fact", "importance": 3, "tags": [...]}]
 
 Graphified output:
-  triples: [{"subject": "...", "predicate": "...", "object": "...", "category": "fact|rule|logic|preference"}]
+  triples: ["<head value>", "<head type>", {}, "<RELATION>", "<rel type>", {}, "<tail value>", "<tail type>", {}]
 ```
 
 The pattern of two-layer output from one LLM call is unchanged; only the second layer's output format changes from flat to structured.

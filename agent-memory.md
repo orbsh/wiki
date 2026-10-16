@@ -62,7 +62,7 @@ Surface 的完整架构语义——Prefix Checkpoint 机制、记忆控制框架
 | 格式 | 结构 | 适用场景 |
 |:--|:--|:--|
 | **flat KV** | content + category + importance + tags | 简单偏好/事实，当前实现 |
-| **graph triples** | subject + predicate + object + category | 有关系结构的知识，图谱化演进方向 |
+| **graph triples** | 定长 9 元组：三个角色各 `[值, 类型, 属性]` | 有关系结构的知识，图谱化演进方向 |
 
 两种格式可以在同一次 LLM 调用中同时输出（双层输出）：
 
@@ -222,7 +222,7 @@ skillforge 已实现两层架构的 Surface（阈值触发 + checkpoint 注入 +
 ## 交叉引用
 
 - **[无状态 Agent 架构](stateless-agent-architecture.md)**：Surface 机制的架构篇——Prefix Checkpoint 详解、记忆控制、触发时机、注入方式、压缩并行旁路。
-- **[Krystallizer](krystallizer.md)**：本项目记忆系统的实现设计——会话控制原语、full/assist 模式、提取三方案演进、KDL 序列化、skillforge 实现现状。
+- **[Krystallizer](krystallizer.md)**：本项目记忆系统的实现设计——会话控制原语、full/assist 模式、提取三方案演进、事实序列化、skillforge 实现现状。
 - **[图谱化记忆](graph-memory.md)**：图谱的记忆概念设计——计算时机光谱详述、双层模型、聚簇策略、权重系统、涌现式 Skill、做梦沉淀。
 - **[缓存树和尾提示词优化](tail-prompt-optimization.md)**：尾提示词的缓存旁路机制。
 - **[Agent 复利](agent-compound-interest.md)**：跨会话累积的价值——记忆是复利资产的载体。
