@@ -4,7 +4,7 @@
 
 *会话控制 + 原子事实图 + 向量着陆检索的嵌入式记忆系统：机制与实现设计。属性图的概念定位见 [图谱化记忆](graph-memory.md)，通用记忆选型分析见 [Agent 记忆选型](agent-memory.md)，Surface 架构语义见 [无状态 Agent 架构](stateless-agent-architecture.md)。*
 
-Krystallizer 是从 skillforge `src/mem` 独立出来的记忆系统，落在 [KV 存储引擎](kv-storage-engine.md)架构上：会话控制原语（branch / tail / summarize）、原子事实图（追加优先的事实，定长 9 元组 + 权重）、内置本地小模型的向量着陆 + 图遍历（ADR-0003 Update 2026-10-14 撤销了 arroy / BM25 / RRF 那一路）。嵌入式 Rust 核心（mem-core）+ Python 绑定（PyO3），零 LLM 依赖、零传输依赖。
+Krystallizer 是从 skillforge `src/mem` 独立出来的记忆系统，落在 [KV 存储引擎](kv-storage-engine.md)架构上：会话控制原语（branch / tail / summarize）、原子事实图（追加优先的事实，定长 8 元组 + 权重）、内置本地小模型的向量着陆 + 图遍历（ADR-0003 撤销了 arroy / BM25 / RRF 那一路）。嵌入式 Rust 核心（mem-core）+ Python 绑定（PyO3），零 LLM 依赖、零传输依赖。
 
 ## 接口面：会话控制、记忆、任务
 
@@ -178,26 +178,26 @@ Prefix Checkpoint 方案下，压缩走与主分支并行的旁路——阈值�
 
 | 阶段 | 提取格式 | 输出 |
 |:--|:--|:--|
-| 当前（Phase 2.5） | flat | `{content, category, importance, tags}` |
-| 未来（图谱化） | graph facts | 定长 9 元组：三个角色各 `[值, 类型, 属性]` |
+| 图谱化之前（Phase 2.5） | flat | `{text, created_at}`——长期记忆的过渡载体，图落地时撤掉（草素描里的 category/importance/tags 从未落地） |
+| 未来（图谱化） | graph facts | 定长 8 元组：head/tail 各 `[值, 类型, 属性]`，关系 `[关系名, 属性]` |
 
-提取机制已改为**模型的主动添加**：模型在推理中调记忆工具，不搭压缩的那一趟（ADR-0008 Update 2026-10-16），输出格式从 flat 变为 structured。
+提取机制已改为**模型的主动添加**：模型在推理中调记忆工具，不搭压缩的那一趟（ADR-0008），输出格式从 flat 变为 structured。
 
-**序列化与可视化**：原子事实的权威格式是**定长 9 元组**（JSON 列表）——三个角色按 head / rel / tail 顺序排列，每个角色是 `[值, 类型, 属性]`：
+**序列化与可视化**：原子事实的权威格式是**定长 8 元组**（JSON 列表）——三个角色按 head / rel / tail 顺序排列：head / tail 是 `[值, 类型, 属性]`，关系是 `[关系名, 属性]`（关系名就是它的种类，没有类型标签）：
 
 ```text
-[<head 值>, <head 类型>, <head 属性>, <关系>, <关系类型>, <关系属性>, <tail 值>, <tail 类型>, <tail 属性>]
+[<head 值>, <head 类型>, <head 属性>, <关系>, <关系属性>, <tail 值>, <tail 类型>, <tail 属性>]
 ```
 
 - `head`/`tail`：值 = 实体值；类型 = 类型标签（小写单 token）；属性 = 实体的属性
-- `rel`：值 = 关系（大写下划线）；类型 = 关系类型标签（小写单 token）；属性 = 关系的修饰（时间 / 条件 / 原因 / 强度）
+- `rel`：值 = 关系（大写下划线，本身即种类）；属性 = 关系的修饰（时间 / 条件 / 原因 / 强度）
 - **空属性写 `{}`**——定长，槽位不省略；类型词表开放
 
 示例（三个角色各带属性 + 规则/逻辑类关系）：
 
 ```json
 ["银河项目", "project", {"priority": "high"},
- "IMPLIES", "architecture", {"confidence": "0.9", "since": "2026-10"},
+ "IMPLIES", {"confidence": "0.9", "since": "2026-10"},
  "事件溯源", "architecture", {"status": "chosen"}]
 ```
 
@@ -218,7 +218,7 @@ Prefix Checkpoint 的缓存优势：checkpoint 不可变，可永久缓存。增
 
 1. checkpoint：用 2-3 句话概括这段对话的核心内容、关键决策和当前状态
 2. facts：提取值得长期记住的信息，格式：
-   每行一条定长 9 元组：["<head 值>", "<head 类型>", {}, "<关系>", "<关系类型>", {}, "<tail 值>", "<tail 类型>", {}]
+   每行一条定长 8 元组：["<head 值>", "<head 类型>", {}, "<关系>", {}, "<tail 值>", "<tail 类型>", {}]
 ```
 
 **依赖关系（已退役，2026-10-16）**：事实曾依赖 checkpoint——先出摘要、再基于摘要提取原子事实。现在不需要：事实由模型在推理中主动添加，与压缩不是同一趟，checkpoint 也就不是它的前置。
@@ -258,7 +258,7 @@ M 问"有没有更好的方法让 AI 更了解我们的代码，不用每次都�
 
 ## 存储实现
 
-存储选型、key 编码、检索实现见 [KV 存储引擎](kv-storage-engine.md)（属性图编码模式、delta 追加消除 read-modify-write、二级索引更新策略、WriteBatch 事务、向量冬眠/载入生命周期）。检索侧：内置本地小模型（进程内，无 API、无 key，模型与数据锁定）算出向量后着陆，再由图遍历展开邻域、按权重排序；另有一个精确入口——实体名/别名点查（图的身份面，不是第三套机制）。分词那条路（jieba + 倒排 + BM25 + RRF）与 arroy 一并撤销，见 ADR-0003 Update 2026-10-14。
+存储选型、key 编码、检索实现见 [KV 存储引擎](kv-storage-engine.md)（属性图编码模式、delta 追加消除 read-modify-write、二级索引更新策略、WriteBatch 事务、向量冬眠/载入生命周期）。检索侧：内置本地小模型（进程内，无 API、无 key，模型与数据锁定）算出向量后着陆，再由图遍历展开邻域、按权重排序；另有一个精确入口——实体名/别名点查（图的身份面，不是第三套机制）。分词那条路（jieba + 倒排 + BM25 + RRF）与 arroy 一并撤销，见 ADR-0003。
 
 **存储承载不分流：k10r 自持 Fjall 目录**（ADR-0007 修订 2026-10-10）。按运行形态分流（Aura 摊位 / wasm 沙箱 + host 侧 NestStorage 执行器帧上抛）已出局——k10r 不是 aura 公民：不注册摊位、不被 aura 派生、不占 ns；无论调用方是谁，"磁盘上一个目录"都成立。schema 语义（derive、Table/EdgeTable、WriteBatch 组帧）走静态 OKM derive，不需要 okm-dynamic。
 
@@ -341,7 +341,7 @@ LLM 双层输出的第二层从 flat memories 变为 graph triples：
   memories: [{"content": "...", "category": "fact", "importance": 3, "tags": [...]}]
 
 图谱化输出：
-  triples: ["<head 值>", "<head 类型>", {}, "<关系>", "<关系类型>", {}, "<tail 值>", "<tail 类型>", {}]
+  triples: ["<head 值>", "<head 类型>", {}, "<关系>", {}, "<tail 值>", "<tail 类型>", {}]
 ```
 
 一次 LLM 调用双层输出的模式不变，只是第二层的输出格式从 flat 变成 structured。

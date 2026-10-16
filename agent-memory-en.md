@@ -271,8 +271,8 @@ From conversation to memory conversion, two formats:
 
 | Format | Structure | Use Case |
 |:--|:--|:--|
-| **flat KV** | content + category + importance + tags | Simple preferences/facts, current implementation |
-| **graph triples** | a fixed-length 9-slot tuple: three roles, each `[value, type, props]` | Knowledge with relational structure, graph evolution direction |
+| **flat KV** | content + category + importance + tags | The pre-graph form of long-term memory (text rows); withdrawn when the graph lands — a text memory has no per-fact identity, so per-fact updating, weighting and enumeration are all out of reach |
+| **graph triples** | a fixed-length 8-slot tuple: head/tail as `[value, type, props]`, the relation as `[name, props]` | Knowledge with relational structure, graph evolution direction |
 
 Both formats can be output simultaneously in a single LLM call (dual-layer output):
 
@@ -425,7 +425,7 @@ Current output:
   memories: [{"content": "...", "category": "fact", "importance": 3, "tags": [...]}]
 
 Graph output:
-  triples: ["<head value>", "<head type>", {}, "<RELATION>", "<rel type>", {}, "<tail value>", "<tail type>", {}]
+  triples: ["<head value>", "<head type>", {}, "<RELATION>", {}, "<tail value>", "<tail type>", {}]
 ```
 
 The single LLM call dual-layer output pattern unchanged, only the second layer's output format changes from flat to structured.

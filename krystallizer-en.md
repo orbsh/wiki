@@ -4,7 +4,7 @@
 
 *An embedded memory system combining session control + atomic fact graph + vector-landing retrieval: mechanisms and implementation design. For the conceptual positioning of the property graph, see [Graph Memory](graph-memory-en.md); for the general memory selection analysis, see [Memory Architecture](agent-memory-en.md); for the Surface architecture semantics, see [Stateless Agent Architecture](stateless-agent-architecture-en.md).*
 
-Krystallizer is a memory system extracted from skillforge `src/mem`, built on the [KV Storage Engine](kv-storage-engine-en.md) architecture: session-control primitives (branch / tail / summarize), an atomic fact graph (append-first facts, a fixed-length 9-slot tuple + weights), and vector landing from a built-in local model + graph traversal (ADR-0003 Update 2026-10-14 withdrew arroy / BM25 / RRF). An embedded Rust core (mem-core) + Python bindings (PyO3), with zero LLM dependency and zero transport dependency.
+Krystallizer is a memory system extracted from skillforge `src/mem`, built on the [KV Storage Engine](kv-storage-engine-en.md) architecture: session-control primitives (branch / tail / summarize), an atomic fact graph (append-first facts, a fixed-length 8-slot tuple + weights), and vector landing from a built-in local model + graph traversal (ADR-0003 withdrew arroy / BM25 / RRF). An embedded Rust core (mem-core) + Python bindings (PyO3), with zero LLM dependency and zero transport dependency.
 
 ## Interface Surfaces: Session Control, Memory, Tasks
 
@@ -178,26 +178,26 @@ All three try to produce two layers from one call; the current approach gets bot
 
 | Stage | Extraction format | Output |
 |:--|:--|:--|
-| Current (Phase 2.5) | flat | `{content, category, importance, tags}` |
-| Future (graphified) | graph facts | a fixed-length 9-slot tuple: three roles, each `[value, type, props]` |
+| Pre-graph (Phase 2.5) | flat | `{text, created_at}` — the transitional carrier of long-term memory, withdrawn when the graph lands (the sketch's category/importance/tags never landed) |
+| Future (graphified) | graph facts | a fixed-length 8-slot tuple: head/tail as `[value, type, props]`, the relation as `[name, props]` |
 
-The extraction mechanism has changed to the **model's active add**: the model calls the memory tool while reasoning, not on the compression pass (ADR-0008 Update 2026-10-16); only the output format changes from flat to structured.
+The extraction mechanism has changed to the **model's active add**: the model calls the memory tool while reasoning, not on the compression pass (ADR-0008; only the output format changes from flat to structured.
 
-**Serialization and visualization**: the authoritative format for atomic facts is a **fixed-length 9-slot tuple** (a JSON list) — the three roles in order head / rel / tail, each `[value, type, props]`:
+**Serialization and visualization**: the authoritative format for atomic facts is a **fixed-length 8-slot tuple** (a JSON list) — the three roles in order head / rel / tail: head and tail as `[value, type, props]`, the relation as `[name, props]` (its name IS its kind, so it has no type label):
 
 ```text
-[<head value>, <head type>, <head props>, <RELATION>, <rel type>, <rel props>, <tail value>, <tail type>, <tail props>]
+[<head value>, <head type>, <head props>, <RELATION>, <rel props>, <tail value>, <tail type>, <tail props>]
 ```
 
 - `head`/`tail`: value = the entity value; type = the type label (lowercase single token); props = the entity's attributes
-- `rel`: value = the relation (uppercase with underscores); type = the relation's type label (lowercase single token); props = the relation's modifiers (time / condition / cause / strength)
+- `rel`: value = the relation (uppercase with underscores — it IS its kind); props = the relation's modifiers (time / condition / cause / strength)
 - **Empty props are written `{}`** — fixed length, no slot omitted; the type vocabulary is open
 
 Example (all three roles carry props + a rule/logic-type relation):
 
 ```json
 ["Galaxy project", "project", {"priority": "high"},
- "IMPLIES", "architecture", {"confidence": "0.9", "since": "2026-10"},
+ "IMPLIES", {"confidence": "0.9", "since": "2026-10"},
  "event sourcing", "architecture", {"status": "chosen"}]
 ```
 
@@ -218,7 +218,7 @@ You are a conversation compressor. Analyze the following conversation history an
 
 1. checkpoint: summarize the core content, key decisions and current state of this conversation in 2-3 sentences
 2. facts: extract information worth remembering long-term, in the format:
-   one fixed-length 9-slot tuple per line: ["<head value>", "<head type>", {}, "<RELATION>", "<rel type>", {}, "<tail value>", "<tail type>", {}]
+   one fixed-length 8-slot tuple per line: ["<head value>", "<head type>", {}, "<RELATION>", {}, "<tail value>", "<tail type>", {}]
 ```
 
 **Dependency (retired, 2026-10-16)**: facts used to depend on the checkpoint — first produce the summary, then extract atomic facts from it. No longer needed: facts are added actively by the model while reasoning, which is not the same pass as compression, so the checkpoint is not their precondition.
@@ -258,7 +258,7 @@ The two are different instances of the same pattern: **invest organizing cost at
 
 ## Storage Implementation
 
-For storage selection, key encoding and retrieval implementation, see [KV Storage Engine](kv-storage-engine-en.md) (property-graph encoding patterns, delta append eliminating read-modify-write, secondary index update strategies, WriteBatch transactions, vector hibernation/loading lifecycle). Retrieval: a built-in local model (in-process, no API, no key, model locked with the data) produces the vector that lands the query, then graph traversal expands the neighborhood and weight ranks the result; a second, exact entrance is the entity name/alias point lookup (the graph's own identity face, not a third mechanism). The tokenization path (jieba + inverted index + BM25 + RRF) and arroy are withdrawn together — ADR-0003 Update 2026-10-14.
+For storage selection, key encoding and retrieval implementation, see [KV Storage Engine](kv-storage-engine-en.md) (property-graph encoding patterns, delta append eliminating read-modify-write, secondary index update strategies, WriteBatch transactions, vector hibernation/loading lifecycle). Retrieval: a built-in local model (in-process, no API, no key, model locked with the data) produces the vector that lands the query, then graph traversal expands the neighborhood and weight ranks the result; a second, exact entrance is the entity name/alias point lookup (the graph's own identity face, not a third mechanism). The tokenization path (jieba + inverted index + BM25 + RRF) and arroy are withdrawn together — ADR-0003.
 
 **Storage hosting is not split by runtime form: k10r holds its own Fjall directory** (ADR-0007 as revised 2026-10-10). The split by runtime form (Aura booth / wasm sandbox + host-side NestStorage executor with thrown-up frames) is withdrawn — k10r is not an aura citizen: it registers no booth, is not spawned by aura, occupies no ns; "one directory on disk" holds regardless of who calls it. Schema semantics (derive, Table/EdgeTable, WriteBatch framing) run over static OKM derive; okm-dynamic is not needed.
 
@@ -341,7 +341,7 @@ Current output:
   memories: [{"content": "...", "category": "fact", "importance": 3, "tags": [...]}]
 
 Graphified output:
-  triples: ["<head value>", "<head type>", {}, "<RELATION>", "<rel type>", {}, "<tail value>", "<tail type>", {}]
+  triples: ["<head value>", "<head type>", {}, "<RELATION>", {}, "<tail value>", "<tail type>", {}]
 ```
 
 The pattern of two-layer output from one LLM call is unchanged; only the second layer's output format changes from flat to structured.
