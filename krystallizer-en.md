@@ -10,7 +10,7 @@ Krystallizer is a memory system extracted from skillforge `src/mem`, built on th
 
 The memory system exposes, and only exposes, two interface surfaces (mechanism/policy separation — the core only answers "how", "when" belongs to the caller):
 
-### Interface Surface 1: Session Control (Full-Control Mode)
+### Interface Surface 1: Session Control (the passive side · short-term)
 
 Three composable primitives, explicitly driven by the agent:
 
@@ -31,16 +31,19 @@ Tail-prompt injection and summarization are both only branch operations: tail is
 
 **LLM calls belong to the caller (Gravity); Krystallizer has zero LLM dependency.** The compression bypass's LLM call is implemented by Gravity: the context cache is bound to the model (and account), and only the side that initiates the inference knows which model to use and which account to go through — Krystallizer does not need and should not know these. The compression decision is in Krystallizer (judging the watermark and marking the bypass at fetch time), while the bypass request is issued by Gravity in parallel with the main branch, hitting the cache naturally. The only exception is the internal vector embedding: Krystallizer calls the embedding model itself, because embedding spaces of different models are mutually incompatible — writes and retrieval must use the same model to compute vectors, and this binding is a data-correctness constraint, not a policy choice. The criterion for both boundaries is the same: **calls bound to model identity belong to whoever holds the session truth** — inference caching binds Gravity's model account, the embedding space binds Krystallizer's storage internals.
 
-### Interface Surface 2: Memory
+### Interface Surface 2: Memory (the active side · long-term)
 
-Two modes:
+Memory is not a per-mode accessory — it is independent of the consumption stance, every agent has it, and it is offered AS TOOLS (any other agent can use it the same way). The axis is who initiates:
 
-- **Full mode (full-session mode)** — `get_context` returns the complete context (checkpoint summary + DB increments + pending user messages). The session itself is the memory; retrieval does not participate.
-- **Assist mode** — `store` / `search` / `forget` operate on flat memories and graph facts. Retrieved context is **auxiliary**: injected alongside the session, never replacing the session.
+- **Passive (short-term)** — the current loop's context: the channel log and its projection. The loop fetches and appends; the model never touches it.
+- **Active (long-term)** — facts outside the context: `store` / `search` / `forget` over flat memory and graph facts, queried by the LLM AS A TOOL. Retrieved context is only **injected**: alongside the session, never replacing it.
+- **Initialization (persona / style)** — graph-derived: k10r assembles it through a traversal from the user node and injects it at the HEAD of the context; the assembly is a k10r internal detail, and the caller only receives it inside the projection. Not ADR-0009's `kind=profile` — that one is who a person in a channel is, not the agent's own style.
+
+The old pair "full control mode / assist mode" is retired: it reads as "full mode makes assist redundant", which is false.
 
 ## Session as Data (Stateless Agent)
 
-Architectural corollary of Full mode: the agent loop degenerates into a pure function.
+Architectural corollary of the passive (session) side: the agent loop degenerates into a pure function.
 
 ```
 f(session, user_input) -> session'
