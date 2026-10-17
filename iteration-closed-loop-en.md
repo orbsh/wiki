@@ -291,6 +291,8 @@ Financial compound interest is that returns generate returns, and it is mathemat
 
 **The mathematical essence of compounding is path dependence, not independent repeated trials.** Independent repeated trials: each result does not affect the next, the historical path is irrelevant — rolling dice is like this; the results of the first ten thousand rolls have no influence whatsoever on the ten thousand and first. A compounding process: each step carries the influence of all the previous steps — the current state is the cumulative result of the historical path. The iteration loop is the latter: the starting point of the Nth round of iteration is not "blank," but the sum of the knowledge, assets, and judgment accumulated over the previous N-1 rounds. The result of each round affects the input of the next, continuously stacking. Iteration without path dependence is just repetition, not compounding.
 
+Compounding presupposes an unbroken path—why the cost of an interruption is multiplication rather than subtraction is worked out in [Cognitive Psychology](cognitive-psychology-en.md) §The Continuity of Focus.
+
 ---
 
 ## Case Study: Iteration vs. No Iteration in AI-Assisted 3D Production

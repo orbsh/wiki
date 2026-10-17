@@ -130,7 +130,7 @@ Why one week:
 ### Why It Works
 1. **Zero marginal thinking cost**: The intellectual work is done for your main job. Publishing is just formatting.
 2. **It compounds with the main work**: Writing down what you learn deepens your own understanding, which makes you better at your main work. The "side" output feeds back into the main output.
-3. **Sustainable**: No context-switching penalty. You are not maintaining two separate cognitive tracks.
+3. **Sustainable**: No context-switching penalty. You are not maintaining two separate cognitive tracks (for the magnitude of that switching cost, see §The Continuity of Focus below).
 
 ### A Logical Derivation of Degrees of Freedom
 
@@ -275,6 +275,60 @@ The math is simple: if you have 100 zero-cost experiments and 1 goes wildly succ
 > High-cost iteration + impatience = inevitable burnout.
 
 This is why "side-hustle culture" fails: it treats by-product work as startup work (high effort, high risk, immediate ROI). The correct framing is **gardening, not hunting**—sow every day, never harvest (let compounding growth do the work).
+
+---
+
+## The Continuity of Focus
+
+### The Core Proposition
+
+What is scarce was never the total amount of time—it is the **continuity of focus**. Time can be bought: buy the service and you take yourself out of the task. Continuity cannot be bought; it is only ever paid for with **giving something up**.
+
+### Two Ways to Pay for Refinement
+
+Where does the time the rich save go? Getting from poor to rich depends on many things, all of which look important, but the one most often overlooked and most decisive is time and focus. The biggest problem in many poor families is not a lack of money but **not producing**—they fuss over meaningless refinements.
+
+Do the rich fuss? Possibly more so, but they pay for it: **refinement on retainer**, money spent, no time spent. The poor do most things themselves, tinkering around the house, looking busy. You can always say that he "can't afford these services, so doing it himself is more cost-effective"—but that accounting prices his time at zero. What he saves is money; what he spends is the scarcest thing he has, continuity.
+
+### The Counter-Intuitive Criterion: If You Can't Afford It, Drop It
+
+Since you can't afford it, don't do it yourself—**just forgo the refinement entirely**.
+
+The cheap compilations circulating online, such as "high-value life guides," are full of holes, and much of what they list is exactly this kind of refinement: follow their several hundred items strictly and your life will definitely not improve—paying attention to and caring about these things every day leaves too little productive focus for what matters. That is precisely the problem.
+
+Nor is the rich man's spare time "better life management": he has outsourced many non-critical decisions, and his focus time comes from there.
+
+### Boiling Water: Interruption Is Multiplication
+
+Water boils at 100 degrees. Below that, its state does not change at all—but you have to keep heating it without distraction. Let your mind wander elsewhere and the time to boil does not merely lose the minutes you spent away; it multiplies. The water cools while you are gone; it does not hold at temperature waiting for you to come back and resume.
+
+The mechanism agrees with the analogy: the real cost of an interruption is not the interval you lost but the **cost of rebuilding the state you were in**—a half-finished accumulation stops where it is, and attention residue, context recovery, and regained feel all have to be paid for again. Subtraction counts only the absent stretch; multiplication counts the cooling as well.
+
+This is also the mechanism behind "never interrupt compounding" (see [Iteration Closed Loop](iteration-closed-loop-en.md) §Compounding): compounding presupposes an unbroken path.
+
+### The Floor: Three Things You Cannot Cut
+
+The poor have no standing to refine much of anything, but three things cannot be cut:
+
+- Clean personal hygiene
+- Not getting sick
+- Energy released into production
+
+Hold those three and much of the daily list need not be done, and many of the people you respond to daily need not be answered. Giving things up has a floor—below that line it is no longer a trade-off but self-destruction.
+
+### Class Difference: The Non-Critical Matters That Got Outsourced
+
+Many children of elite families are not only good at schoolwork and sports but—infuriatingly—good at games too. It is not necessarily good genes: **their families can outsource and take care of everything else**, leaving them to focus solely on the high-ROI, high-leverage things, which is why they look excellent. Outsourcing is an important variable, not the only one.
+
+Turn it around: nobody ever calls the child who hoes the family fields briskly excellent—because that is not leverage.
+
+### The Close: The Only Path for Someone Without Resources
+
+- **The rich**: by outsourcing many non-critical decisions and matters, they have time to focus on what produces more efficiently, still manage personal hobbies, and somehow have time to spare.
+- **The poor**: have nothing in hand that produces more efficiently, but everyone can find one thing with a very high ceiling of potential return and keep heating it until one day it boils.
+- **The price**: to match the rich man's focus time, you must first give up what he outsourced, and as far as possible give up time-consuming personal hobbies.
+
+If you mean to change your fate on your own, this is the necessary condition. There is no other way.
 
 ---
 

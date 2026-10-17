@@ -35,7 +35,7 @@
 | [LLM 缓存破坏模式](llm-caching-destruction-patterns.md) | [LLM Caching Destruction Patterns](llm-caching-destruction-patterns-en.md) | Prompt Caching 生效条件、前缀稳定性、IDE/Agent 场景的缓存杀手 |
 | [LLM 隐藏行为模式](llm-hidden-behavior-patterns.md) | [LLM Hidden Behavior Patterns](llm-hidden-behavior-patterns-en.md) | 模型未显式表达但影响输出的行为模式 |
 | [缓存树和尾提示词优化](tail-prompt-optimization.md) | [Tail Prompt Optimization](tail-prompt-optimization-en.md) | 上下文缓存旁路分支机制，用于压缩/汇总/提取 |
-| [认知心理学](cognitive-psychology.md) | [Cognitive Psychology](cognitive-psychology-en.md) | 认知科学框架在 AI Agent 设计中的应用 |
+| [认知心理学](cognitive-psychology.md) | [Cognitive Psychology](cognitive-psychology-en.md) | 个人认知与成长原则：自驱力、无痛重复、认知陷阱、副产品思维；专注的连续性与资源约束下的取舍 |
 
 ## 架构与基础设施
 
