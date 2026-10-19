@@ -4,7 +4,7 @@
 
 *会话控制 + 原子事实图 + 向量着陆检索的嵌入式记忆系统：机制与实现设计。属性图的概念定位见 [图谱化记忆](graph-memory.md)，通用记忆选型分析见 [Agent 记忆选型](agent-memory.md)，Surface 架构语义见 [无状态 Agent 架构](stateless-agent-architecture.md)。*
 
-Krystallizer 是从 skillforge `src/mem` 独立出来的记忆系统，落在 [KV 存储引擎](kv-storage-engine.md)架构上：会话控制原语（branch / tail / summarize）、原子事实图（追加优先的事实，定长 8 元组 + 权重）、内置本地小模型的向量着陆 + 图遍历（ADR-0003 撤销了 arroy / BM25 / RRF 那一路）。嵌入式 Rust 核心（mem-core）+ Python 绑定（PyO3），零 LLM 依赖、零传输依赖。
+Krystallizer 是从 skillforge `src/mem` 独立出来的记忆系统，落在 [KV 存储引擎](kv-storage-engine.md)架构上：会话控制原语（branch / tail / summarize）、原子事实图（追加优先的事实，定长 8 元组 + 权重）、内置本地小模型的向量着陆 + 着陆到的社区（读时把社区的节点与边渲染成带 id 的文本；ADR-0003 撤销了 arroy / BM25 / RRF 那一路）。嵌入式 Rust 核心（mem-core）+ Python 绑定（PyO3），零 LLM 依赖、零传输依赖。
 
 ## 接口面：会话控制、记忆、任务
 
@@ -78,7 +78,7 @@ Agent 按 `session_id` 取完整会话 → 执行 → 把新会话写回。循�
 ```
 写入: 原始输入 → [阶段1: 规范化+分类] → [阶段2: 分类提取原子事实] → Fjall（工作记忆）→ 权重积累
                                                                     ↓ (weight > threshold)
-读取: Fjall（长期记忆）→ 向量着陆 + 图遍历 → 按权重排序返回
+读取: Fjall（长期记忆）→ 向量着陆 → 着陆到的社区 → 按权重渲染带 id 的文本
                     ↓ (weight < threshold)
 冷存: S3 → 需要时 RAG 检索
 ```
@@ -258,7 +258,7 @@ M 问"有没有更好的方法让 AI 更了解我们的代码，不用每次都�
 
 ## 存储实现
 
-存储选型、key 编码、检索实现见 [KV 存储引擎](kv-storage-engine.md)（属性图编码模式、delta 追加消除 read-modify-write、二级索引更新策略、WriteBatch 事务、向量冬眠/载入生命周期）。检索侧：内置本地小模型（进程内，无 API、无 key，模型与数据锁定）算出向量后着陆，再由图遍历展开邻域、按权重排序；另有一个精确入口——实体名/别名点查（图的身份面，不是第三套机制）。分词那条路（jieba + 倒排 + BM25 + RRF）与 arroy 一并撤销，见 ADR-0003。
+存储选型、key 编码、检索实现见 [KV 存储引擎](kv-storage-engine.md)（属性图编码模式、delta 追加消除 read-modify-write、二级索引更新策略、WriteBatch 事务、向量冬眠/载入生命周期）。检索侧：内置本地小模型（进程内，无 API、无 key，模型与数据锁定）算出向量后着陆，再取落进的那个社区（成员走 `by_community` 面，社区内的事实走遍历面），按权重排序并在读时渲染成带 id 的文本——没有摘要这一遍，也没有给消费方的固化门；另有一个精确入口——实体名/别名点查（图的身份面，不是第三套机制）。分词那条路（jieba + 倒排 + BM25 + RRF）与 arroy 一并撤销，见 ADR-0003。
 
 **存储承载不分流：k10r 自持 Fjall 目录**（ADR-0007 修订 2026-10-10）。按运行形态分流（Aura 摊位 / wasm 沙箱 + host 侧 NestStorage 执行器帧上抛）已出局——k10r 不是 aura 公民：不注册摊位、不被 aura 派生、不占 ns；无论调用方是谁，"磁盘上一个目录"都成立。schema 语义（derive、Table/EdgeTable、WriteBatch 组帧）走静态 OKM derive，不需要 okm-dynamic。
 
@@ -325,6 +325,8 @@ SurrealDB graph  SurrealDB KV      SQLite + vector
 ---
 
 ## 图谱化演进
+
+**（历史草案：skillforge 时期迁移路径的记录。其中 HNSW / BM25 / RRF 与 SurrealDB 一路已被 ADR-0003 / ADR-0002 撤销——现行形态是 Fjall + OKM 上的着陆 + 社区读取，见上文。）**
 
 ```
 当前：  flat KV + 向量/BM25/RRF

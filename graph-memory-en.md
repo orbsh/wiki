@@ -443,7 +443,7 @@ Facts are an append-first record of objective events. Two opposite facts (differ
 
 - **Weight accumulation**: each fact carries a weight, and retrieval sorts by weight. Facts that recur and are corroborated by multiple sources gain weight, and isolated facts naturally sink—the authority to adjudicate conflicts is delegated to the accumulation of evidence, not to the order of a single write.
 - **Actor/domain attribution**: each fact node carries the subject to which it belongs. If opposite statements of the same question belong to different subjects, they are not a conflict but two positions—the retriever adopts according to its own perspective, and the two coexist in the graph.
-- **Derived views at retrieval time**: retrieval (vector landing + graph traversal) returns a set of facts ranked by the current query context, and the view is assembled at read time. The same graph derives different views for different queries—this is a direct corollary of "read-time computing" in conflict resolution.
+- **Derived views at retrieval time**: retrieval (vector landing + the community the landing falls into) returns a set of facts ranked by the current query context, and the view is assembled at read time. The same graph derives different views for different queries—this is a direct corollary of "read-time computing" in conflict resolution.
 
 This stance is consistent with the computational-timing spectrum: conflict resolution is a read-time operation. Moving it to write time (separating truth, overwriting, RMW rewriting) means giving up all the benefits of append-first and returning to the old path of traditional designs.
 

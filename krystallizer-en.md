@@ -4,7 +4,7 @@
 
 *An embedded memory system combining session control + atomic fact graph + vector-landing retrieval: mechanisms and implementation design. For the conceptual positioning of the property graph, see [Graph Memory](graph-memory-en.md); for the general memory selection analysis, see [Memory Architecture](agent-memory-en.md); for the Surface architecture semantics, see [Stateless Agent Architecture](stateless-agent-architecture-en.md).*
 
-Krystallizer is a memory system extracted from skillforge `src/mem`, built on the [KV Storage Engine](kv-storage-engine-en.md) architecture: session-control primitives (branch / tail / summarize), an atomic fact graph (append-first facts, a fixed-length 8-slot tuple + weights), and vector landing from a built-in local model + graph traversal (ADR-0003 withdrew arroy / BM25 / RRF). An embedded Rust core (mem-core) + Python bindings (PyO3), with zero LLM dependency and zero transport dependency.
+Krystallizer is a memory system extracted from skillforge `src/mem`, built on the [KV Storage Engine](kv-storage-engine-en.md) architecture: session-control primitives (branch / tail / summarize), an atomic fact graph (append-first facts, a fixed-length 8-slot tuple + weights), and vector landing from a built-in local model + the landed community (the read renders the community's nodes and edges as id-bearing text; ADR-0003 withdrew arroy / BM25 / RRF). An embedded Rust core (mem-core) + Python bindings (PyO3), with zero LLM dependency and zero transport dependency.
 
 ## Interface Surfaces: Session Control, Memory, Tasks
 
@@ -78,7 +78,7 @@ This is isomorphic to Aura's "stateful API, stateless operations" stance: sessio
 ```
 Write: raw input → [Stage 1: normalize + classify] → [Stage 2: extract atomic facts] → Fjall (working memory) → weight accumulation
                                                                                        ↓ (weight > threshold)
-Read:  Fjall (long-term memory) → vector landing + graph traversal → return sorted by weight
+Read:  Fjall (long-term memory) → vector landing → the landed community → rendered as id-bearing text, weight-ordered
        ↓ (weight < threshold)
 Cold:  S3 → RAG retrieval when needed
 ```
@@ -258,7 +258,7 @@ The two are different instances of the same pattern: **invest organizing cost at
 
 ## Storage Implementation
 
-For storage selection, key encoding and retrieval implementation, see [KV Storage Engine](kv-storage-engine-en.md) (property-graph encoding patterns, delta append eliminating read-modify-write, secondary index update strategies, WriteBatch transactions, vector hibernation/loading lifecycle). Retrieval: a built-in local model (in-process, no API, no key, model locked with the data) produces the vector that lands the query, then graph traversal expands the neighborhood and weight ranks the result; a second, exact entrance is the entity name/alias point lookup (the graph's own identity face, not a third mechanism). The tokenization path (jieba + inverted index + BM25 + RRF) and arroy are withdrawn together — ADR-0003.
+For storage selection, key encoding and retrieval implementation, see [KV Storage Engine](kv-storage-engine-en.md) (property-graph encoding patterns, delta append eliminating read-modify-write, secondary index update strategies, WriteBatch transactions, vector hibernation/loading lifecycle). Retrieval: a built-in local model (in-process, no API, no key, model locked with the data) produces the vector that lands the query, then the landed community is read (members through the `by_community` face, the facts whose endpoints are both members), weight-ranked, and rendered as id-bearing text at read time — no summarization pass and no consolidation door for a consumer; a second, exact entrance is the entity name/alias point lookup (the graph's own identity face, not a third mechanism). The tokenization path (jieba + inverted index + BM25 + RRF) and arroy are withdrawn together — ADR-0003.
 
 **Storage hosting is not split by runtime form: k10r holds its own Fjall directory** (ADR-0007 as revised 2026-10-10). The split by runtime form (Aura booth / wasm sandbox + host-side NestStorage executor with thrown-up frames) is withdrawn — k10r is not an aura citizen: it registers no booth, is not spawned by aura, occupies no ns; "one directory on disk" holds regardless of who calls it. Schema semantics (derive, Table/EdgeTable, WriteBatch framing) run over static OKM derive; okm-dynamic is not needed.
 
@@ -325,6 +325,7 @@ Three: `store` / `search` / `forget`. The auxiliary interfaces `list_all` (expor
 ---
 
 ## Graphification Evolution
+**(Historical draft: the skillforge-era migration path, recorded as such. The HNSW / BM25 / RRF branch and SurrealDB were withdrawn by ADR-0003 / ADR-0002 — the current form is landing + community reads on Fjall + OKM, above.)**
 
 ```
 Current:  flat KV + vector/BM25/RRF
