@@ -36,6 +36,7 @@
 | [LLM 隐藏行为模式](llm-hidden-behavior-patterns.md) | [LLM Hidden Behavior Patterns](llm-hidden-behavior-patterns-en.md) | 模型未显式表达但影响输出的行为模式 |
 | [缓存树和尾提示词优化](tail-prompt-optimization.md) | [Tail Prompt Optimization](tail-prompt-optimization-en.md) | 上下文缓存旁路分支机制，用于压缩/汇总/提取 |
 | [认知心理学](cognitive-psychology.md) | [Cognitive Psychology](cognitive-psychology-en.md) | 个人认知与成长原则：自驱力、无痛重复、认知陷阱、副产品思维；专注的连续性与资源约束下的取舍 |
+| [紧急陷阱](urgency-vs-importance.md) | | 紧急为何不自动累积成重要：四种失效、Goodhart 定律与伪造成本判据、表演棘轮（代价作为最后一种可信信号）、反馈回路断裂、三档杠杆 |
 
 ## 架构与基础设施
 
