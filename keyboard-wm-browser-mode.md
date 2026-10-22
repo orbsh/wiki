@@ -47,7 +47,7 @@
 
 - **`--app` 每页一窗口**：无 omnibox、无标签条 → 最大化 webview。Niri 默认无标题栏 → 打开就是一张干净网页。"标签"（tab）不在浏览器里，由外部控制器（mudra）按 **tag 森林**管理。**CDP 操纵不了 Chromium 的 UI chrome**（标签条/omnibox 是浏览器自身 UI，非 CDP 能力范围）——最小 UI 只能靠 `--app`，不能用 CDP 去缩/藏 chrome。
 - **CDP 脊梁**：控制浏览器里所有 target（含错误页、内置页）+ `Target.targetCreated/Destroyed` 事件实时同步到 KV 存储（okm/fjall，满足"关闭时更新列表"）+ 恢复。
-- **mudra-keys 扩展（自研，2026-09-05 落地）**：普通页面的键盘驾驶——四模式状态机（normal/hint/insert/command）、qutebrowser 式底部状态栏（ctx·mode·tag 胶囊｜title·url·滚动%）、link hint、滚动命令 + `<N>%` 百分比跳转、`:set` 运行时改配置。MV3 **零构建**（源码即产物，`--load-extension=<repo>/frontend`，扩展根 = `frontend/`：`extension/` 放 content/SW，`shared/` 放与控制台面板共用的库——solid 运行时（全局 IIFE bundle）、bar、tag 胶囊组件）。决策记录在 mudra 仓库 `docs/ADR-self-maintained-extension.md`。取代 SurfingKeys 的动机：SurfingKeys MV2 构建在 chromium 139+ 被静默拒载，且交互面（tag 胶囊、状态栏数据源）需要与 mudrad 深度耦合，自研才能闭环。
+- **mudra-keys 扩展（自研，2026-09-05 落地）**：普通页面的键盘驾驶——四模式状态机（normal/hint/insert/command）、qutebrowser 式底部状态栏（ctx·mode·tag 胶囊｜title·url·滚动%；底色半透明 + `backdrop-filter` 毛玻璃，半径由 `bar.blur` 给，文字色默认 `auto`＝按底色亮度取黑/白）、link hint、滚动命令 + `<N>%` 百分比跳转、`:set` 运行时改配置。MV3 **零构建**（源码即产物，`--load-extension=<repo>/frontend`，扩展根 = `frontend/`：`extension/` 放 content/SW，`shared/` 放与控制台面板共用的库——solid 运行时（全局 IIFE bundle）、bar、tag 胶囊组件）。决策记录在 mudra 仓库 `docs/ADR-self-maintained-extension.md`。取代 SurfingKeys 的动机：SurfingKeys MV2 构建在 chromium 139+ 被静默拒载，且交互面（tag 胶囊、状态栏数据源）需要与 mudrad 深度耦合，自研才能闭环。
 - **KV 存储 + web 控制台**：**tag 森林**组织与精炼（多 tag 维度 × 页面）、isolated 实例隔离、窗口↔进程映射、url 记录与过滤、网站列宽记忆；控制台（`mudra ui`）是唯一管理面（早期 launcher 路线已废弃，见 §七）。
 - **扩展面（2026-10 落地）**：页面生命周期事件落只追加的事件日志（`POST /events` 按 cursor 回放），常驻子进程扩展经 stdio 被宿主托管——线契约采用 **Induction**（与 aura 的 effector 同一份契约，mudra 零 aura crate 依赖）。决策见 §十一 与 mudra 仓 `docs/ADR-extension-protocol.md`。
 
