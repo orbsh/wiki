@@ -64,8 +64,8 @@ Chromium 是 **process-per-page**（每页面一个 renderer，无论一窗多�
 
 ## 五、地址输入、历史与命令（热键）
 
-- "地址栏"由**扩展的命令模式 `:open`** 承担：候选 = 当前活动页（仅 console 角色，选中→focus）排在**历史行**之前（History collection，ns 7；四腿等权 RRF 排名，见 `/history`），选中历史即开该 URL，无候选 Enter 即按输入开 URL。**2026-10-14 换法**：指称文本＝剥掉 scheme 的打字面（小写）＋小写标题；召回＝**词元子串包含**（**没有长度地板**，两个字符也算词元）∪ **子序列**（`sim_score` 回归为模糊腿——`ghb`→github 由它答，`ycombinat`→news.ycombinator.com 由地址中段任意位置的包含答）；打分＝文本 BM25（URL 噪声由 idf 承担，不是靠把 url 挡在召回之外）＋访问次数＋时间，四腿等权 RRF；两条召回腿都不命中的地址（无论访问多少次）不出现在非空查询里，空查询保留旧规则（全表、按访问次数）。`by_addr`/`by_title` 两个读索引退役：子序列没有索引可答（字符集索引＝同一次全读、局部性更差），召回只能是一次全读，索引随之失去剪枝对象——历史行＝一行一个地址（不是一次访问一行），本机全库 108 KB 量级，空查询本来就全读。
-- 历史由 `/open`、`/add` 经 `history_bump` 写入，**不 bump epoch**（面板不可见 collection 不占 epoch 纪律）。
+- "地址栏"由**扩展的命令模式 `:open`** 承担：候选 = 当前活动页（仅 console 角色，选中→focus）排在**历史行**之前（History collection，ns 7；四腿等权 RRF 排名，见 `/history`），选中历史或直接 Enter（无候选）都按输入开该 URL；**Esc 是取消**，不会把已输入的半截文本当 URL 打开。**两个打开动词（2026-10-22）**：`open` = 在本页就地导航（`location.href`，hints 的 `f` 与 picker 的 Enter 都走它），`new` = 另开一个 `--app` page 窗口（hints 的 `F`，即 mudrad `/open`）；console 页（面板本身）永不就地导航，一律走 `new`。两种动词的地址都经后端同一处 `spawn::normalize_url` 解析：缺 scheme 补 `https://`，**单标签裸词补 `.com`**（`bing`→`bing.com`，`localhost`／带端口／带 userinfo／带点的 host 原样），所以地址栏里的裸词不再是 `https://bing` 这种死域名。**2026-10-14 换法**：指称文本＝剥掉 scheme 的打字面（小写）＋小写标题；召回＝**词元子串包含**（**没有长度地板**，两个字符也算词元）∪ **子序列**（`sim_score` 回归为模糊腿——`ghb`→github 由它答，`ycombinat`→news.ycombinator.com 由地址中段任意位置的包含答）；打分＝文本 BM25（URL 噪声由 idf 承担，不是靠把 url 挡在召回之外）＋访问次数＋时间，四腿等权 RRF；两条召回腿都不命中的地址（无论访问多少次）不出现在非空查询里，空查询保留旧规则（全表、按访问次数）。`by_addr`/`by_title` 两个读索引退役：子序列没有索引可答（字符集索引＝同一次全读、局部性更差），召回只能是一次全读，索引随之失去剪枝对象——历史行＝一行一个地址（不是一次访问一行），本机全库 108 KB 量级，空查询本来就全读。
+- 历史由 `/open`、`/add`、`/visit` 经 `history_bump` 写入，**不 bump epoch**（面板不可见 collection 不占 epoch 纪律）。`/visit` 是 `open` 动词的后端半边：就地导航只刷新既有 page 行（watcher 看不见新访问），所以解析地址 + 记这一笔由动词承担。
 - 前进 / 后退 / 刷新 = CDP history 命令（`Page.getNavigationHistory` / `navigateToHistoryEntry` / reload），经统一动词面 `/nav` 暴露。
 - 早期"launcher（walker）承担地址输入"方案随 launcher 层一起废弃（2026-09）。
 
