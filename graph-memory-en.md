@@ -177,6 +177,32 @@ Retrieve layer (view):     return by cluster, not loose edges
 
 Analogous to a database: raw rows are atomic, materialized views are aggregated. Queries go to the view, writes go to the row.
 
+### An Alternative: A Context Gate After Retrieval
+
+Clustering solves "return loose edges instead of a cluster"; it does not solve "which members of the cluster reach the prompt". That decision is made today by ranking: the highest-weighted few, under a fixed budget. The ranking reads each fact's own counters (reads, writes, tool invocations) and never looks at where the fact sits in the **current query's** local subgraph — an old fact that reads much like the question but is topologically isolated, and one still held up by three live edges, can score the same.
+
+**The proposal is to insert one pure-in-memory pass between retrieval and prompt assembly** (a context gate): project the few dozen candidates retrieval returned, together with the predicates among them, into a flat feature matrix and an adjacency list; score each candidate; drop the ones below a threshold before the prompt is built, so only the rest enter the context. The pass writes nothing, touches no storage layer, needs no background job and runs no full-graph algorithm — it exists only for the life of one request.
+
+**Why it is cheap.** The entire cost is matrix multiplication over a very small n: with n around twenty and d the embedding width, one forward pass is O(n²d) — a few hundred thousand multiply-adds, microseconds to tens of microseconds. The cost of a conventional GNN is the full-graph recomputation; this design never pays it because it never touches the full graph — a store of thousands still hands over twenty at a time.
+
+**The score.** A candidate `i`'s alignment dot product with the query `q`, multiplied by a predicate-weighted neighbour-agreement term:
+
+```
+score(i) = (v_i · q) · (1 + tanh(Σ_j w_ij · (v_i · v_j)))
+```
+
+`w_ij` comes from a small constant table keyed by the predicate on the edge between `i` and `j` (DEPENDS_ON, CITES, CONCERNS and so on). The two factors answer different questions: alignment asks "is this on topic", the neighbour term asks "is what supports it live or dead". Multiplied, a candidate that arrived on textual similarity alone but sits among severed edges is pushed down by the second factor.
+
+**Its relation to the weight system is orthogonal.** A weight is a monotone signal at storage time (counters); the gate is a one-off judgement at query time. It changes no weight and no row. On the same store and the same candidate set, a different table of predicate constants is a different trade-off — which is why those constants are policy and belong in reviewable, diffable, revertible configuration rather than as literals scattered through code.
+
+**The next step forward is making the parameters learnable.** A constant table is the right start when there is no data; once usage signals exist (which candidates entered the prompt, which were adopted, which the user corrected afterwards) a small projector can be trained to replace the constants. That path needs three things that do not exist today: a usable training signal (adoption and ignoring have to line up with specific candidates), a place to keep the weights (a new table, or a model directory), and a retraining flow that does not break "vectors do not carry across models" — a retrain swaps the space, which means re-embedding the whole store.
+
+**The implementation skeleton.** Three parts: projection (`LocalGraphMatrix`: an adjacency list plus a flat `Vec<f32>` feature matrix), scoring (per candidate, walk its neighbours, dot product, multiply by the edge weight, `tanh`), and pruning (a threshold selecting a set of indices). In Rust that is a plain loop over `iter().zip().map().sum()`, which the compiler vectorizes without hand-written SIMD intrinsics; threading or `wide`/`std::simd` is for later tuning.
+
+**The one thing it cannot do** — stated here so it is not overrated: nothing in the score carries the signal "the model has already internalized this". Alignment is query↔candidate and the neighbour term is candidate↔candidate, so a genuinely on-topic point scores high whether or not the model needs to be told. Pruning on "the model has outgrown this" needs usage feedback, not a threshold — that is what the learnable branch above is for.
+
+**There are two places to land it**, and the trade-off is where the boundary sits: either the store grows a read that answers scores for a candidate set (one more door, one more interface obligation), or the consumer runs the pass over what it already fetched (no new door, but every consumer writes its own projection). The first collects the policy in one place; the second keeps the line "the store does not assemble prompts" intact.
+
 ### The Two-Stage Extraction Pipeline
 
 Extracting atomic facts directly from spoken/multi-party dialogue lets the signal drown in noise. A two-stage pipeline is used: normalize first, then classify and extract.
