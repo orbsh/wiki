@@ -122,7 +122,7 @@ Vector retrieval satisfies evolvability but not exactness. Wiki satisfies exactn
 
 ### Document vs. Atomic Fact
 
-Document-style memory has three structural defects, which atomic facts resolve one by one:
+Document-style memory has four structural defects, which atomic facts resolve one by one:
 
 **Semantic drift**: after a document is repeatedly modified, its topic shifts. Links/references that originally pointed to it still exist, but the target is no longer the same thing. A document written as "evaluation of plan A" becomes "implementation record of plan B" after a few edits, and every reference to "evaluation of plan A" in other documents forever points at the wrong target. Atomic facts do not have this problem—edges are immutable, new knowledge = new edges, and the semantic position of an old edge never changes.
 
@@ -140,6 +140,20 @@ Document-style memory has three structural defects, which atomic facts resolve o
 | Relation explicitness | Implicit (requires inference) | Explicit (stored directly) |
 | Reference accuracy | Degrades with modification | Permanently accurate |
 | Update complexity | O(n²) (in-place modification requires reading the full text) | O(n) (append-first, no reading of the old) |
+
+#### The defect of the form itself
+
+All four defects above can be softened by "writing the document better". Three more, which come from the form of text, cannot.
+
+**Storage is presentation.** Text has no "exists but is not presented" setting: whatever is written down is eligible to occupy tokens on every read—either spread into the context or nonexistent. So the ceiling on text memory is not storage but context: the more entries, the more the attention is diluted and the worse the hit quality. A graph has that setting: an edge stays in the store, and if it is not selected, not one byte enters the context.
+
+**Update unit, read unit and presentation unit are one.** All three are the whole document. Every local need is paid at whole-document price, which is where O(n²) comes from; the more important consequence is that text **encourages fusion**—only the fused whole is presentable, so independent points have no independent form of existence in text (a bulleted list only swaps one linear order for another). One layer further: text has exactly one reading order, so adjacency implies relatedness by default; a graph has no default reading order, so relatedness must become an explicit edge. "Related" in text is therefore unqueryable and can only be obtained by parsing.
+
+**A link is not an edge.** A bidirectional wiki really is a graph, but the link's predicate is empty—it asserts only "related", with no type, no direction, no strength and no evidence. Relations can therefore only be guessed by an LLM reading the text at both ends; analyzing connectivity means parsing all the related text. An edge carries a predicate and system metadata, so the relation itself becomes a computable object.
+
+**Division of labour: edges carry selection, nodes carry content.** Weight, counters and access distributions are fields the model never needs to read—they serve the selection function. So a graph is not "feeding structured data to the model" but "using structured data to pick the one stretch of text that should enter the context". Presentation still goes through text (that is the model's native form); selection does not.
+
+**What the graph pays for: ranking bias.** Ranking brings ranking bias. Text does not rank, so it has none—its problem is the opposite: everything spread out, unordered, read by a human. Every weight system must deal with self-reinforcement at the head: what is selected gets counted, and counted makes it likelier to be selected again. So weight design is less about "how to weight" than about "how to let the cold things in": external reference citations, query-time activity re-ranking, and subjectively set weights written from outside all point in that direction.
 
 ### The Retrieval Dilemma of Atomic Facts
 
@@ -376,7 +390,8 @@ Each edge carries system-level metadata:
 
 ```
 Business attributes (relation_props):  since:2011, scope:global, reason:xxx
-System attributes (weight_meta):       read_count, write_count, last_read, last_write
+System attributes (weight_meta):       read_count, write_count, tool_count,
+                                       recent_read[8], recent_write[8], weight
 ```
 
 The two layers do not mix. Business attributes describe "what this piece of knowledge says"; system attributes describe "how important this piece of knowledge is".
@@ -398,7 +413,7 @@ read_count and write_count form a two-dimensional coordinate that defines four c
              Cold zone │      Deep zone
    low read, low write │ high read, low write
              low value │   queried but high barrier
- → demote to cold data │  → high weight, rarity bonus
+ → demote to cold data │  → high weight
                        │
               write-light (depth)
 ```
@@ -406,7 +421,7 @@ read_count and write_count form a two-dimensional coordinate that defines four c
 | Quadrant | read | write | Meaning | Handling |
 |:--|:--|:--|:--|:--|
 | **Core zone** | high | high | Knowledge used and confirmed repeatedly | Highest weight, returned first |
-| **Deep zone** | high | low | Queried but with a high write barrier (expert knowledge, deep-water traps) | High weight + rarity bonus; does not penalize low writing |
+| **Deep zone** | high | low | Queried but with a high write barrier (expert knowledge, deep-water traps) | High weight (the read coefficient exceeds the write one); does not penalize low writing |
 | **Noise zone** | low | high | Written frequently but queried by no one (stale decisions, invalid records) | Downweighted, marked as noise candidates |
 | **Cold zone** | low | low | Low-value knowledge | Demoted to cold data, spills to S3 |
 
@@ -416,14 +431,24 @@ read_count and write_count form a two-dimensional coordinate that defines four c
 
 #### Weight Calculation
 
-```
-weight = read_score + write_score + rarity_bonus - time_decay
+The stored value keeps only monotone quantities:
 
-read_score  = log(1 + read_count)        # logarithmic decay, prevents head domination
-write_score = log(1 + write_count) × 0.5  # write weight lower than read
-rarity_bonus = 1.0 if read_count > threshold AND write_count < threshold else 0  # deep-zone bonus
-time_decay  = days_since_last_access × 0.01  # slow decay
 ```
+weight = ( log(1 + read_count)  × 1.0
+         + log(1 + write_count) × 0.5
+         + log(1 + tool_count)  × 1.5 ) × 1000
+
+read_count    served retrievals (counted only when the call carries a clock)
+write_count   assertions (linked, or won the adjudication; a dropped fact does not count)
+tool_count    tool consults reported by the consumer—k10r cannot see a tool call, so
+              the party that used the fact reports it
+```
+
+The logarithm prevents head domination: the 100th read is worth far less than the second. The write coefficient is lower than the read one, so "written often" no longer passes for importance—the deep zone (high read, low write) holds by that coefficient gap alone and needs no separate rarity bonus.
+
+Time does not enter the stored value. Two rings hold the last 8 accesses each, in second offsets, read and write kept apart: the total answers "how many", the ring answers "where the recent ones bunched up"—50 accesses crammed into one week and 50 spread over two years do not mean the same thing. That distribution is used at **query time** only, to re-rank the facts already fetched. So the stored value carries no time, never goes stale between two writes, and the face that orders by weight does not lie.
+
+`weight` is the ranking key; the formula is merely its default producer. The field can be written from outside (0 = unset, use the formula; non-zero = an absolute value that replaces it), giving subjective judgement an entrance without a second field. The subjective value does not enter the formula today; it is written only when an override is wanted.
 
 High-weight edges are returned first at query time. Low-weight edges are not deleted but demoted to cold data.
 
