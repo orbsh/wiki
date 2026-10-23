@@ -173,7 +173,7 @@
 | [Fluxora 决策](projects/fluxora-decisions.md) | | Fluxora ADR |
 | [NixOS 配置](projects/nixos-config.md) | [NixOS Configuration](projects/nixos-config-en.md) | NixOS 主机配置与模块结构 |
 | [SkillForge](projects/skillforge.md) | | 多引擎 Agent 框架 |
-| [ψ 语言设计](projects/psi.md) | | wasm 原生的方法链语言（假想设计）：调用单原语、统一访问、标签模型、Json 与 Path、泛型与种类 |
+| ψ 语言设计（`~/world/psi`） | | wasm 原生的方法链语言（假想设计）：调用单原语、统一访问、标签模型、Json 与 Path、泛型与种类。文档已迁入项目仓库 |
 | [知识库](projects/knowledge-base.md) | [Knowledge Base](projects/knowledge-base-en.md) | SurrealDB RAG 架构 |
 | [部署 CI](projects/deployment-ci.md) | | Helm 部署与 CI 数据配置 |
 | [RisingWave CDC](projects/risingwave-cdc.md) | | RisingWave CDC 方案 |

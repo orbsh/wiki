@@ -15,5 +15,5 @@
 | `https://github.com/orbsh/okm` | OKM：Object-Keyspace Mapping（项目，原 wiki 文档已并入） | 对标 ORM 的 KV 键空间映射过程宏。交叉引用 kv-storage-engine |
 | `../unified-data-layer.md` | SurrealDB 统一数据层 | 现代多模型引擎、SurrealQL 人体工程学、Redis/PG 插件的统一替代（根目录） |
 | `skillforge.md` | SkillForge | 多引擎 Agent 框架（Agno + Hermes）：上下文传播、技能加载、工具格式化 |
-| `psi.md` | ψ | wasm 原生的方法链语言（假想设计）：单原语调用、统一访问、标签模型、Json 与 Path、无 LLVM 后端、三宿主形态 |
+| `~/world/psi` | ψ | wasm 原生的方法链语言（假想设计）：单原语调用、统一访问、标签模型、Json 与 Path、无 LLVM 后端、三宿主形态。文档已迁入项目仓库 `docs/design.md` |
 | `nixos-config.md` | NixOS 配置 | 基于 Flake 的 NixOS 主机（workstation、server、portable、qemu）、模块结构、便携更新工作流 |
