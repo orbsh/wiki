@@ -37,6 +37,9 @@
 | [缓存树和尾提示词优化](tail-prompt-optimization.md) | [Tail Prompt Optimization](tail-prompt-optimization-en.md) | 上下文缓存旁路分支机制，用于压缩/汇总/提取 |
 | [认知心理学](cognitive-psychology.md) | [Cognitive Psychology](cognitive-psychology-en.md) | 个人认知与成长原则：自驱力、无痛重复、认知陷阱、副产品思维；专注的连续性与资源约束下的取舍 |
 | [紧急陷阱](urgency-vs-importance.md) | | 紧急为何不自动累积成重要：四种失效、Goodhart 定律与伪造成本判据、表演棘轮（代价作为最后一种可信信号）、反馈回路断裂、三档杠杆 |
+| [意义来源于连接](meaning-as-connection.md) | | 知识论：意义是连接的涌现、难度即概念到既有网络的距离、小说与数学的不对称、情绪自锁循环、枢纽拓扑与神童寓言、教育推论、成年人靠库存 |
+| [终生学习与环境工程](lifelong-learning.md) | | 成年人的学习：点火而非坚持、代理指标必然败坏、散兵线、沉浸环境与接触流、信念的现货与期货、奶头乐分叉 |
+| [自上而下](top-down-learning.md) | | 学习顺序：自下而上的两重代价、真实问题自带次序、两个西格玛、递归补洞、AI 私教、反馈密度、作品与代理信号 |
 
 ## 架构与基础设施
 
