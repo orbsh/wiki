@@ -116,6 +116,7 @@
 | 文档 | English | 内容 |
 |:--|:--|:--|
 | [AI 时代组织](ai-era-organization-individual.md) | [AI Era Organization and Individual](ai-era-organization-individual-en.md) | 约束-解分析方法论、联邦化、个体崛起 |
+| [液态化](liquefaction.md) | | **科普向**：故事开篇。文件/频道/职级/页面四层边界同源；一个窗口、拖钉成流、夜间扫描投递、可导航三维图；知识、组织、软件是同一张图的四种读法 |
 | [AI 时代商业模式](ai-era-business-models.md) | [AI Era Business Models](ai-era-business-models-en.md) | AI 对商业模式的重塑 |
 | [风口的三种姿态](windfall-arbitrage.md) | [Windfall Arbitrage](windfall-arbitrage-en.md) | 渠道控制者 / 有准备的人 / 投机者三种姿态与对比：复利资产的差异 |
 | [市场形态全谱系](market-form-spectrum.md) | | 服务/产品/创作者/资产/投机/中介六形态与个人适配、认知操作系统轴、天赋勘探提示词 |
