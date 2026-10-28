@@ -37,12 +37,12 @@
 
 | 仓 | 阶段 | 下一步 | 阻塞于 |
 |---|---|---|---|
-| [aura](../../../world/aura/docs/PLAN.md) | 事件面终态落地（Phase 4.13/4.17-4.19）；ctx.timer 落地 | A3（部署态运维）、A4（USAGE 扫尾，低优） | — |
-| [krystallizer](../../../world/krystallizer/docs/PLAN.md) | Phase 2 最小切片 + mem-server HTTP 三端点落地 | Phase 2 后续切片（threads/cursors/策略引擎） | — |
-| [gravity](../../../world/gravity/docs/PLAN.md) | Phase 0 落地（MemorySurface seam + 双 surface 契约测试） | Phase 1：provider booth + LLM 注入面 | — |
-| [prism](../../../world/prism/docs/PLAN.md) | Phase 1 收尾（logout + server-side revocation 已落地） | turn verbs（gravity M-A 已解锁） | — |
-| [effector](../../../world/effector/docs/PLAN.md) | pyo3 0.29 + 改名完成 | A4 USAGE 双语扫尾（低优） | — |
-| [okm](../../../world/okm/docs/PLAN.md) | 全部 shipped phases 稳定 | 跟随消费者需求 | — |
+| [aura](https://github.com/orbsh/aura/blob/main/docs/PLAN.md) | 事件面终态落地（Phase 4.13/4.17-4.19）；ctx.timer 落地 | A3（部署态运维）、A4（USAGE 扫尾，低优） | — |
+| [krystallizer](https://github.com/orbsh/krystallizer/blob/main/docs/PLAN.md) | Phase 2 最小切片 + mem-server HTTP 三端点落地 | Phase 2 后续切片（threads/cursors/策略引擎） | — |
+| [gravity](https://github.com/orbsh/gravity/blob/main/docs/PLAN.md) | Phase 0 落地（MemorySurface seam + 双 surface 契约测试） | Phase 1：provider booth + LLM 注入面 | — |
+| [prism](https://github.com/orbsh/prism/blob/main/docs/PLAN.md) | Phase 1 收尾（logout + server-side revocation 已落地） | turn verbs（gravity M-A 已解锁） | — |
+| [effector](https://github.com/orbsh/effector/blob/main/docs/PLAN.md) | pyo3 0.29 + 改名完成 | A4 USAGE 双语扫尾（低优） | — |
+| [okm](https://github.com/orbsh/okm/blob/main/docs/PLAN.md) | 全部 shipped phases 稳定 | 跟随消费者需求 | — |
 
 **关键路径**：krystallizer channel log → gravity Phase 0/1 → prism turn verbs → gravity Milestone B（booth 绑定）
 
@@ -94,3 +94,15 @@
   Errata（§6「生产侧 = script carriers」作为形式被取代，en+zh）、wiki
   stateless-agent-architecture（en+zh，摊位形态与 CLI 循环节）。代码重写
   （gravity-booth 换 induction-guest）待用户确认后执行。
+
+### 2026-10-28
+
+- **无协议面裁决落地两仓**：k10r ADR-0022（不做 MCP server、不做 A2A 类端点、
+  不读 skill 文件目录；三个接口面到三为止，调用方写适配器）+ gravity ADR-0006
+  （协作是并行度不是消息：turn 无收件箱、无协议客户端、无运行时工具注册；
+  协调走事实与任务顶点，并行度来自任务图拓扑）。两仓 ADR 双语，均未提交。
+- **同一判据写入 wiki**：生态轴度量陌生实现之间的握手成本，扩展轴度量随实体
+  数增长的成本与损耗——MCP/A2A/文件式 SKILL 在矩阵内两根轴同时指向不用。
+  graph-memory（§文件式 SKILL 的位置、§液态化）、krystallizer（§不提供协议面）、
+  stateless-agent-architecture（§没有 agent 间协议）、mcp-critique（§同一类的
+  协议）、multi-agent-critique（§2.5 环境中心）中英同步。

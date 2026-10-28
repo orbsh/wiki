@@ -384,6 +384,14 @@ This ruling replaces the previous "HTTP + SSE by default" plan. The reason for t
 
 Mid-turn interaction is still dissolved by the turn model — a person interjecting while a turn is in progress = new input → a new turn (appended to the session, with convergent handling of concurrency ruled by Krystallizer's session control primitives); permission confirmation is a pending turn in the session, not a privileged frame on the WS.
 
+### No Inter-Agent Protocol
+
+There is no agent protocol between the four components, and no A2A-class interconnection. Gravity to Effector is a call (CallSlot); Gravity to Prism is a domain event; Gravity to Krystallizer is a call on the three interface surfaces. These are **component contracts**, not something negotiated between agents — the contract is fixed by code, its version travels with the deployment, and there is no registration, no discovery, no handshake.
+
+The reason is the same as for the capability surface: a protocol surface optimizes interoperability between unfamiliar implementations, at the price of one channel per connection whose semantics must be maintained separately ([MCP Critique §The Same Class](mcp-critique-en.md)). These components are homogeneous and shipped by one deployment manifest — no unfamiliar implementation needs a handshake. Nor does the capability surface grow by hot-plugging through a protocol: skills emerge from usage data (see the skill emergence loop above), and both files and MCP are only distribution forms of that ([Graph Memory §Where the File-Based SKILL Sits](graph-memory-en.md)).
+
+Parallelism does not come from the number of connections: the task graph's branch topology decides what can run at the same time, and an append to the fact graph is a merge ([Multi-Agent Critique §2.5](multi-agent-critique-en.md)). Adding an agent adds no channel — it reads from the same memory surface and writes to the same task graph.
+
 ## Comparison with Conventional Agent Architectures
 
 | Dimension | Conventional (resident process) | This architecture (stateless) |

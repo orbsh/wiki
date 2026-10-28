@@ -48,6 +48,18 @@ The old pair "full control mode / assist mode" is retired: it reads as "full mod
 - **Instance state (open / done) is a structured field** for exact enumeration ("how many open"), delivered with the projection — never through the approximate-retrieval pipeline.
 - **Who writes what**: k10r holds the task definition, its links and its structured state; the executing side writes completion at the call site — completion is never a model judgement.
 
+### No Protocol Surface: No MCP, No A2A, No File-Based SKILL
+
+k10r implements no MCP server, no inter-agent protocol (A2A class), and does not describe capabilities as a list of file-based SKILLs. The three refusals are one criterion applied three times: **the ecosystem axis measures the handshake cost between unfamiliar implementations; the extension axis measures cost and loss that grow with the number of entities** — this system's payoff on the ecosystem axis is zero, and its pressure on the extension axis is maximal.
+
+The payoff of a protocol surface (MCP / A2A) is external integration: implement once, usable from any compatible client, and unfamiliar implementations can shake hands. k10r's consumers are homogeneous agent loops; no external implementation needs a handshake, so the ecosystem payoff is zero. The cost is one channel per connection whose semantics must be maintained separately (identity, capability declaration, schema version, timeouts, retries, delivery semantics, idempotency), and that cost grows with the number of agents. A registry adds a dynamic trust surface on top: being able to hot-plug a tool or a peer at runtime is being able to rewrite the capability boundary at runtime.
+
+The payoff of a file-based SKILL is distribution: the directory is the channel, Git is the version, copying is the migration. As a capability model it does not hold at team scale — the count runs far beyond tens or hundreds, and the boundaries have no single correct cut ([Graph Memory §Where the File-Based SKILL Sits](graph-memory-en.md)). Here a SKILL is the emergent high-tool-index subgraph of usage data; a file is one export of it at a point in time.
+
+These refusals serve a target form that is not a personal assistant but a liquid organization of super-individuals ([Liquefaction](liquefaction.md)): crews form against a goal and dissolve when the task ends, and capability boundaries drift with use. The file-based SKILL and the protocol endpoint are both artifacts of the individual form — their cost structure assumes a bounded capability list with clear ownership, maintained by the person who owns it; in a liquid organization all three premises fail at once and maintenance volume plus chaos are what remain ([Graph Memory §Liquefaction](graph-memory.md)).
+
+So k10r's interface surfaces are the three above and stop at three: session control, memory, tasks. No channels exist between agents — writers write the graph, readers project by goal, and no one addresses or perceives anyone. What multi-agent needs is parallel execution (the task graph's branch topology gives the degree of parallelism) and shared structure (an append to the fact graph is a merge), not more connections ([Multi-Agent Critique §2.5](multi-agent-critique-en.md)).
+
 ## Session as Data (Stateless Agent)
 
 Architectural corollary of the passive (session) side: the agent loop degenerates into a pure function.

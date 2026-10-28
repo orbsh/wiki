@@ -498,6 +498,20 @@ Facts are an append-first record of objective events. Two opposite facts (differ
 
 This stance is consistent with the computational-timing spectrum: conflict resolution is a read-time operation. Moving it to write time (separating truth, overwriting, RMW rewriting) means giving up all the benefits of append-first and returning to the old path of traditional designs.
 
+## Liquefaction: the Knowledge Form Must Match the Organizational Form
+
+The preceding sections describe how the graph is built, retrieved and clustered. This one addresses something more basic: why it must be a graph rather than a better set of files.
+
+Today's agents are almost all **built for an individual**: one agent, its own working directory, its own capability list, where SKILLs are files in that directory and tools are protocol endpoints registered into it. That form rests on three premises — a bounded capability list, clear ownership, and maintenance by the person who owns it. File-based SKILLs and MCP sit exactly on those premises, which is why they are optimal inside that form.
+
+The target form is not a personal assistant but a **liquid organization of super-individuals**: no fixed roles or departments, crews formed against a goal and dissolved when the task ends, people and AIs recomposed on demand ([Liquefaction](liquefaction.md)). There, "who can do what" is no longer a personal asset but the organization's live state: capability boundaries drift with use, permission comes from topology, and the same operation sequence belongs to this piece of work now and to that one next. The two premises of the individual form — a bounded list and clear ownership — do not hold.
+
+**Graphification is itself liquefaction.** The organization's liquidity, carried down to the knowledge layer, means knowledge no longer has a fixed container. A file is a solid container: fixed boundary, written once, singly owned. A graph is a liquid carrier: the boundary drifts with use, an append is the update, and ownership is connectivity. What the liquefaction document describes as "knowledge: from files to graphs" is a necessary consequence of the mechanism here — not that a graph was chosen, but that a liquid organization accepts no other form.
+
+Under that goal, file-based SKILLs and MCP are not "a bit worse" — they are a **form mismatch**: both assume a bounded capability list maintained by an individual. Once the count rises and boundaries start drifting, maintenance cost turns from "engineering overhead" into "chaos itself" — a directory cannot express overlap and drift, and a protocol endpoint cannot express which subgraph a capability currently belongs to. The criterion is the same as in the two preceding sections (§The Scale Criterion, §Where the File-Based SKILL Sits): the capability is not lacking, the form and the organizational form disagree.
+
+Conversely, an individual is a special case of a liquid organization (a crew of one member), and the same memory surface degrades gracefully to serve it; what was built for the individual form does not hold up at organizational scale.
+
 ## Graph Skills
 
 ### Graph and Network: Two Lenses on the Same Structure
@@ -535,6 +549,20 @@ The difference between traditional designs and the graph design at scale is not 
 **The true premise of creation and updating**: SKILL functionality keeps expanding and boundaries inevitably overlap, and full maintenance is likewise quadratic. The fallback "global scan and rewrite" is feasible only for purely document-type skills; **an enterprise SKILL with scripts is real executable code (with interface contracts, side effects, state), which cannot be synthesized/rewritten and can only evolve incrementally**—relying on structured graph-boundary management (emergence + dreaming + human review), not full rewriting.
 
 > One-sentence criterion: **ACL = pairwise combinatorial explosion (harder with use at scale, physically hitting a wall); graph = structured sharing amortization (better with use at scale, cheaper the denser the connections).** Any design should first answer "at scale, does it get better with use or harder with use".
+
+### Where the File-Based SKILL Sits: a Distribution Form, Not a Capability Model
+
+A file-based SKILL (a directory + SKILL.md + scripts) is optimal in the distribution dimension: the directory is the distribution channel, Git is the version, copying is the migration, humans can read and edit it, and an AI can read, write and modify it directly. Those advantages hold under two conditions — a bounded count and human-drawn boundaries: tens to a few hundred SKILLs, loaded on demand by a single agent. Hermes-style single-machine environments sit inside those conditions, and the file form should not change there.
+
+Team and self-evolving environments sit outside them: the count keeps growing with use far beyond that magnitude, and the boundaries have no single correct cut. Both criteria turn from "manageable engineering cost" into "maintenance that can never be finished".
+
+Count: injecting all summaries costs `O(N) × per round`; re-partitioning boundaries requires reading every SKILL description, likewise `O(N) × frequency`. Retrieval pushes loading down to `O(K)`, but boundary-drawing has no corresponding reduction — it is `O(N)` reading plus judgement, independent of retrieval.
+
+Boundaries: SKILLs have no clear borders. Functional expansion inevitably overlaps, and the same operation sequence can legitimately belong to several SKILLs — not because the cut was drawn wrong, but because the object has no single correct cut (the same fact as ACL finding no stable object, §The Control-Target Criterion). Human boundary-drawing therefore becomes maintenance that gets more expensive with every step and never catches up with use (§The Human Quandary of Skill Boundaries).
+
+Conclusion: the file is the SKILL's **distribution form**, not its **capability model**. In the capability model a SKILL is an emergent high-tool-index subgraph of usage data (§Emergent Skill Boundaries); a file is one export of it at a point in time — frozen by the export, and the frozen form does not drift with use. Memory is the same: the boundary of an atomic fact is not drawn by a filename, and the moment it becomes a file it stops evolving.
+
+Two axes separate the forms: the **ecosystem axis measures the handshake cost between unfamiliar implementations; the extension axis measures cost and loss that grow with the number of entities**. File-based SKILLs win on the ecosystem axis — anyone can write one, anyone can read one, no runtime dependency — and lose on the extension axis. MCP is the network version of the same structure ([MCP Critique](mcp-critique-en.md)).
 
 ### The Control-Target Criterion: ACL Has No Clear Control Target
 

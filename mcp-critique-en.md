@@ -25,6 +25,14 @@ MCP has one value this document must acknowledge: **standardization**. Write one
 
 But this doesn't change the fact that MCP is technically over-engineered. Standardization ≠ the only correct implementation — USB standardized peripheral connectivity, but USB-C's alternate mode hell proves standardization itself can be an over-engineering product. MCP's standardization value holds in **multi-client scenarios**; it does not hold in **single-tech-stack pure-terminal environments** — if there's only one Agent framework, there's no need for cross-client standards, and CLI + Skill's lightweight advantage immediately overwhelms MCP's ecosystem advantage.
 
+### The Same Class: A2A and Agent-to-Agent Interconnection
+
+MCP connects agents to tools; A2A-class protocols (agent-to-agent interconnection, capability registration and discovery, cross-framework delegation) connect agents to agents. The criterion is identical and only the two ends move: both optimize interoperability between unfamiliar implementations, and both pay by turning collaboration into a channel that must be maintained independently.
+
+The cost of a channel is not bandwidth but the semantics that must be negotiated per pair: identity, capability declaration, schema version, timeouts, retries, delivery semantics, idempotency. N agents connected pairwise is N(N-1)/2 channels; collapsing them onto a central broker merely swaps N(N-1)/2 for N channels plus a topological single point — as the count grows the problem is not "a little slower" but a topology that cannot be maintained ([Multi-Agent Critique §2.5](multi-agent-critique-en.md)). A registry adds one more dynamic trust surface: being able to hot-plug a tool or a peer at runtime is being able to rewrite the system's capability boundary at runtime.
+
+The two axes point in opposite directions here: the **ecosystem axis measures the handshake cost between unfamiliar implementations, the extension axis measures cost and loss that grow with the number of entities**. Inside a homogeneous matrix whose count keeps growing, ecosystem value is near zero (no external implementation needs a handshake) while extension cost grows with the number of agents. So this system has no inter-agent protocol internally; the only coordination medium is shared memory and the task graph.
+
 ---
 
 ## III. Three Technical Pseudo-Advantages
@@ -91,9 +99,9 @@ If Skill came first, MCP has no place. Because:
 - Skill already solves execution (spawn / WASM Sandbox)
 - The remaining "cross-client communication" is **optional protocol adaptation**, not core architecture
 
-### How Skill Handles Scale
+### How Skill Handles Scale (the Single-Agent Scope)
 
-"10000 Skills can't be loaded" — this objection assumes the same full-loading model as MCP. Skill architecture natively supports scale management:
+"10000 Skills can't be loaded" — this objection assumes the same full-loading model as MCP. Within the scope of **a single agent governing its own context**, Skill loading can indeed be managed at scale:
 
 - **Search**: Embedding-based semantic retrieval — Agent describes intent, returns Top-K relevant Skills
 - **Tree organization**: Skills are composable — `release-management` = `git` + `docker` + `kubernetes` + `slack`, hierarchical not flat
@@ -101,7 +109,9 @@ If Skill came first, MCP has no place. Because:
 
 MCP cannot do these. MCP's `tools/list` returns a **flat Schema list** — no hierarchy, no composition, no semantic retrieval. The larger the scale, the more infeasible MCP's full loading becomes, while Skill's search + composition + tree structure becomes more valuable.
 
-[graph-memory](graph-memory.md)'s **emergent Skills** further illustrate this: tool usage data naturally clusters into Skill boundaries — Skills are not artificially defined, they emerge from usage data. As Skills evolve from manual definition to automatic clustering, scale management is not a question of "can you load them" but "how to efficiently retrieve and compose them" — this is Skill architecture's native capability, which MCP lacks.
+**But this answer covers loading, not boundaries.** Retrieval pushes injection down to `O(K)`; re-partitioning still requires reading every description (`O(N)` × frequency), and SKILLs have no single correct cut — functional expansion inevitably overlaps. Once the scope becomes a team, dynamic evolution, self-evolution — counts far beyond tens or hundreds — boundary-drawing cost becomes the dominant term: the file-based SKILL is out as a **capability model** there, it is only a **distribution form** (criterion in [Graph Memory §Where the File-Based SKILL Sits](graph-memory-en.md)). The capability model is the emergent high-tool-index subgraph of usage data, whose boundary drifts with use instead of being drawn once by a person.
+
+So "reject MCP, adopt Skill" reads in two layers: for a single machine and a single agent, CLI + Skill is optimal; once count and evolution pressure rise, what Skill keeps is the emergent capability model and what it loses is the file layer. What MCP and the file-based SKILL share is **fixing the capability model to one concrete form** — the only difference being whether that form is a local directory or a network protocol.
 
 ---
 
@@ -224,6 +234,8 @@ After a Skill starts, it has access to the full capabilities of its implementati
 
 **Sovereign pure-terminal environment** (Claude Code / independent CLI Agent): Hold firm on CLI + Skill. Tools and memories persist as Python scripts and plaintext / LibSQL in project directories (`.agent_skills/`), tracked by Git, with traceability and environment isolation. Migration is direct directory copy. Memory layer can be externalized (see [AI Agent Selection](ai-agent-selection.md) for memory externalization architecture), no MCP binding needed.
 
+**The matrix interior is none of the above.** In the Krystallizer matrix ([Stateless Agent Architecture](stateless-agent-architecture-en.md)) agents are homogeneous and their count grows with the team and with self-evolution: the ecosystem value of MCP and A2A-class protocols is zero here, while channel cost grows with the number of agents; the file-based SKILL is not the capability model either, only its distribution form. There is no inter-agent protocol internally — coordination runs through shared memory (the atomic-fact graph) and the task graph: writers write the graph, readers project by goal, and no one addresses anyone.
+
 ---
 
 ## Cross References
@@ -232,4 +244,4 @@ After a Skill starts, it has access to the full capabilities of its implementati
 - **[Agent Compound Interest](agent-compound-interest.md)**: Tool sovereignty local = compound interest to user; protocol binding = platform lock-in. Skill direct directory copy = zero migration cost = compound interest unbroken.
 - **[agentmemory](agent-memory.md)**: Memory layer via MCP compromise, low-frequency operation overhead acceptable.
 - **[Karpathy's AI Coding Methodology](karpathy-ai-coding-methodology.md)**: SYSTEM.md / TODO.md are Skill prototypes; document-driven is engineering adaptation against LLM statelessness.
-- **[graph-memory](graph-memory.md)**: Emergent Skills — tool usage data naturally clusters into Skill boundaries, scale management via search and composition, not full loading.
+- **[graph-memory](graph-memory-en.md)**: Emergent Skills — tool usage data naturally clusters into Skill boundaries; the file-based SKILL is a distribution form, and scale management rests on emergent boundaries plus retrieval, not on human boundary-drawing.

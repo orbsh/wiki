@@ -66,12 +66,22 @@ Corollary: the quality upper bound of a multi-agent system is determined by "num
 
 Strip away the packaging of "multiple AI employees holding a meeting", and multi-agent has only one real demand: **increase parallelism**. And parallelism does not require inter-agent communication — its requirements are that tasks be decomposable and results mergeable. The message-passing paradigm welds "parallel execution" and "coordination communication" together into the same mechanism (natural-language dialogue), so coordination loss eats up the parallel gains. The correct approach is to decouple: execute in parallel, coordinate through shared structures.
 
+**Environment-centric: agents do not address each other.** This coordination form presupposes abolishing the "notification" layer. Notification-style collaboration (RAP, message queues, pub/sub, A2A-class agent interconnection) is at bottom "I call you, you subscribe to me": both sides must address and perceive each other, and each collaboration is a channel that must be maintained independently. As the count grows, the number of channels is itself the topological disaster. The matrix instead demotes the coordination medium to a shared environment — the atomic-fact graph and the task graph. Collaboration is not me telling you something but me changing the environment (writing a fact, opening a task vertex), and you seeing the change naturally when you extract context for your own goal. The writer does not know who reads; the reader does not know who wrote; there is no addressing, no subscription, no delivery, and the hop count is zero. "Who is waiting for whom" also disappears from the system — with no waiting, there is no timeout, retry or idempotency semantics to maintain.
+
+**Context is derived per goal, not piled up.** With no notification there is no need to fill the context window with "who said what and which tools exist": before each turn the projection is derived from the graph against the current goal ([Krystallizer](krystallizer-en.md)). Tools and knowledge are looked up on the spot, not a list pasted into the window once — the longer the list, the more easily tool routing collapses.
+
+**The boundary**: emit/on inside an Aura realm is the engine's in-process runtime event surface (stall decoupling, routing, the persistent queue), not an inter-agent collaboration surface. The event name is a runtime addressing mechanism and carries no semantic negotiation between agents; reading the two as one thing yields the contradictory impression of "rejecting subscriptions while living on on()".
+
 The corresponding deterministic solutions already have a complete stance in the wiki; here we merely consolidate them:
 
 - **Topology replaces relaying**: deterministic orchestration (§4.1, §4.2) — master-slave delegation, FSM transitions, strong-Schema messages.
 - **A task graph as the coordination medium**: the graph replaces message passing; the N(N-1)/2 channels of pairwise communication among N agents converge into N-to-1 ([Graph Memory §Task Networking](graph-memory-en.md#task-networking-task-forest)).
 - **Parallelism comes from the graph topology**: task nodes with no strong dependencies are naturally concurrent after topological pruning; the unit of parallelism is the graph's branch structure, not message orchestration ([Graph Memory §Task Networking](graph-memory-en.md#task-networking-task-forest)).
 - **Result merging goes append-only**: facts are appended into the graph as deltas, the write path has no conflicts, and logical conflicts are resolved at read time ([Graph Memory §Read-Time Conflict Resolution](graph-memory-en.md#read-time-conflict-resolution)).
+
+**The number of agents is not a design variable.** What is needed is parallel execution plus shared structure: the unit of parallelism is a branch of the task graph (topology sets the degree of parallelism; no scheduler doles out slots), and the unit of coordination is an increment of the fact graph (append is merge). Treating the agent count as a tunable parameter to scale up scales the coordination cost with it — §2.4's hops and the coupling described above get amplified together.
+
+The deterministic orchestrations above (topology, strong-Schema messages) are the convergence plan "when multi-agent is unavoidable": they turn uncontrollable group chat into auditable channels. The matrix interior goes further — it sets up no channel at all, because homogeneous agents have no semantics to negotiate ([MCP Critique §The Same Class](mcp-critique-en.md)).
 
 ---
 
