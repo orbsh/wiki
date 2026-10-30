@@ -152,6 +152,7 @@
 | [技术哲学](tech-philosophy.md) | | 应试工程 vs 范式转移 |
 | [职场沟通](workplace-communication.md) | [Workplace Communication](workplace-communication-en.md) | 职场沟通方法 |
 | [坐姿工作范式](seated-work-paradigm.md) | | 坐姿与工作方式 |
+| [手型解剖与动作适配](hand-anatomy-ergonomics.md) | | 指长比偏离均等手型时的姿势重排：手掌前移+掌托托大鱼际解放短食指、侧身单动投篮+中指无名指拨球；破除"标准姿势"教条 |
 | [工程思维与工程素养](engineering-mindset-and-competence.md) | | 工程师双核心能力：认知决策模型（思维）与职业行为规范（素养） |
 | [可视化迷思](visual-myth.md) | [The Myth of Visualization](visual-myth-en.md) | 可视化形式的结构性批判 |
 | [图形语法与 AI 可视化](grammar-of-graphics.md) | | 图形语法理论（Data→Scale→Aesthetics→Geom→Coord）+ AI 出图选型（Vega-Lite vs AntV F2 vs ApexCharts）|
