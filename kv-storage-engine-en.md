@@ -99,6 +99,24 @@ Iteration is **sequential I/O**, not random I/O. SSTables are ordered; a scan ju
 | `put(key, value)` | O(log N) | Write to MemTable (memory); sequential SSTable writes at flush |
 | `delete(key)` | O(log N) | Write a tombstone marker; space reclaimed at Compaction |
 
+### Scale Boundaries: Is TB-Scale a Fit?
+
+TB scale is KV's home turf, but "a fit" has conditions. The limit is not get/put — their complexity is independent of volume — but three costs bound respectively by **key count** and **value size**.
+
+1. **Compaction write amplification**: leveled LSM commonly runs 10–20x, so 1TB of steady writes means 10–20TB of merge traffic; the write-throughput ceiling is roughly disk sequential bandwidth divided by write amplification. Small values (<1KB) suffer most here; tiered/universal styles cut it to 3–5x at the cost of space amplification.
+2. **Per-key metadata in RAM**: a bloom filter is about 10 bits/key (≈1.2GB for 1e9 keys), plus SST block indexes and the memtable for another few hundred MB to 1GB. This cost is set by **key count**, not by bytes: tens of GB of RAM carrying a 1TB keyspace is a routine configuration, and at 1e10 keys it is time to shard.
+3. **Value size**: below 1KB is the LSM sweet spot; 1KB–100KB works but watch write amplification; above 1MB, keep the payload out of the value — store key, metadata and a pointer in KV, and put the body in object storage or a value-log (WiscKey-style key/value separation).
+
+Three ways to scale, each with its own price:
+
+*   **Single-node sharding**: split by key prefix into several independent engine instances (100GB–1TB each) routed in-process. No consensus cost, no cross-shard transactions; operationally it is several directories.
+*   **Distributed KV**: regions cut along prefix boundaries, each with its own Raft group, storage multiplied by the replica count. Scale by adding nodes; the cost moves into coordination — cross-region scans have to merge multiple streams, cross-shard transactions need two-phase commit, hot regions need key-design spreading.
+*   **Separation of compute and storage**: SSTs live on object storage (the slatedb shape), local disk keeps only cache and WAL; replication is the object store's job (fixed 3-AZ, independent of client count), at the price of μs becoming ms and compaction turning into object-storage traffic.
+
+This is exactly where B+tree and LSM diverge. A B+tree writes in place — one logical write is one (or a few) random page I/O, throttled by random IOPS — but its read path is short (3–4 levels cover all data), it has no background merge traffic, and its space amplification is near 1. LSM is the mirror image: writes append sequentially at high throughput, paid for with read amplification (multi-level lookups) and compaction's write and space amplification. So the question is never "which is better", but "write-heavy or read-heavy, random or sequential, SSD or HDD, and can you tolerate background jitter": the B+tree sweet spot is a few TB per instance, read-heavy, point reads that need a stable p99; the LSM sweet spot is write-heavy volume beyond what one machine can comfortably index in memory, tolerating compaction jitter.
+
+Shapes that should not be forced onto KV (change the architecture instead): full-table aggregation (no columnar layout, no vectorization — summing 1TB means scanning 1TB); arbitrary ad-hoc dimensions (a predicate outside the key needs a pre-declared face, and faces are finite); cross-shard strong transactions; and "the data already sits in object storage but I want SQL".
+
 ### SQL Translation Layer vs KV Pipeline Chain: A Decisive Advantage Under Predictable Query Patterns
 
 For framework platforms (API gateways, agent executors, 3D pipelines), the data access path is fixed at design time. Dropping SQL is not for convenience — it eliminates the database optimizer (Query Planner) as a runtime black box, yielding 100% physical performance determinism.
@@ -128,7 +146,7 @@ let top_10 = kv_engine
     .collect::<Vec<_>>();
 ```
 
-**Why KV wins**: the Rust method chain is more concise than SQL's declarative boilerplate (SELECT/FROM/WHERE/ORDER BY/LIMIT). No black-box optimizer being clever — the code *is* the execution path. From 10MB to 10TB of data, execution efficiency is unchanged and sub-millisecond response is unshakable.
+**Why KV wins**: the Rust method chain is more concise than SQL's declarative boilerplate (SELECT/FROM/WHERE/ORDER BY/LIMIT). No black-box optimizer being clever — the code *is* the execution path. That advantage is independent of data volume: a point get is one O(log N) locate plus one or two SST lookups, and a fixed-depth prefix scan is the same locate plus K sequential reads, at 10MB or at 10TB. What does change is the shape of the latency curve — at TB scale p99 is governed by compaction pressure and block-cache hit rate, and a long prefix scan costs the size of its range (see "Scale Boundaries").
 
 #### Two often-overlooked costs: result-set caching and permission checks
 
