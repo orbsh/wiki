@@ -199,6 +199,24 @@ impl FrameworkStorage {
 
 The primary table stores the full data; the index table stores only an empty value (the entity ID is already encoded in the key via its binary-sortable order). One atomic commit — both keys succeed or fail together. SQL's `INSERT INTO` cannot write to two tables in a single statement with atomicity guaranteed — that requires an additional transaction wrapper.
 
+### Prefix Scan vs SQL: The Promise and Its Price
+
+A prefix scan is less flexible than SQL and less abstract. That is simply true, and it is worth laying out what it costs and what it buys.
+
+SQL sits at a higher level of abstraction: write the predicate, and which index serves it, whether a covering index is used, how joins are ordered — all the optimizer's job. The trouble is that this promise is often unkept, and in the worst possible way: not with an error, but by quietly making physical layout part of the query. Every implementation whose index depends on key order (MySQL's composite indexes being the canonical case) runs into the left-prefix rule: whether `INDEX(a, b, c)` can serve `WHERE b = 1` depends on the field order chosen at create-table time. The developer is thus forced to maintain a mental picture of a B+ tree while writing declarative queries, and field order ends up decided by query usability rather than semantics. That is an abstraction leak, not abstraction (see [MySQL Critique](mysql-critique-en.md), "Index Rigidity").
+
+A prefix scan puts the same fact on the table: key layout IS the access path, read order IS storage order, and the probe IS the WHERE clause. It never promises to choose a path for you, so no promise can be broken.
+
+The costs are three real constraints:
+
+*   **Flexibility**: predicates cannot be combined freely. Adding a `WHERE` clause in SQL costs one edit; changing an access dimension here costs a declaration change, a rebuild of the face, and a data migration.
+*   **Abstraction**: the developer has to know byte order, field widths, and the limits on variable-length segments — has to know that `[org][user][device]` serves "all users of an org" well and "which org does this device belong to" not at all.
+*   **Evolution**: query patterns are settled at modeling time; a dimension that arrives late is served by a new face, or by re-laying-out the key.
+
+The payoff is three items, one per cost: the read path is predictable (no black-box optimizer, no stale-statistics surprises at runtime); performance is reasoned about rather than hoped for (a prefix hit is a range hit, and a scan's cost is the range size times the per-entry cost); and the semantics are honest (there is no "reads nicely, scans the whole table" gap).
+
+In one sentence: SQL uses abstraction to cover the optimizer's competence boundary; a prefix scan publishes that boundary and hands the decision to the developer. Choosing the second road means admitting that automatic optimization is genuinely hard — and only after admitting it can a model deliver value where it actually excels (settling access patterns at modeling time) instead of promising what it cannot do.
+
 ### Composite Key Encoding: Redis Data Structures → KV
 
 A pure KV engine has no Hash, ZSET, or other primitives. Every data structure the frontend needs is uniformly simulated via key encoding + prefix/range scans (the table below gives the generic mapping using Redis data structures as reference):
@@ -2196,6 +2214,6 @@ This document is the **constructive counterpart**: not just "Redis is bad," but 
 - Critique §Distributed Locks: says "building it yourself is simple" → this document shows Fjall's in-process lock implementation; for the distributed-lock proposal see the [Consensus Protocol document](consensus-protocol-en.md)
 - Critique §Cluster Myth: says Redis lacks strong consistency → the [Consensus Protocol document](consensus-protocol-en.md) fills that gap with a validated consensus solution
 
-→ For the SQL comparison argument see [SQL Translation Layer vs KV Pipeline](#sql-translation-layer-vs-kv-pipeline-chain-a-decisive-advantage-under-predictable-query-patterns) and [KV's DDL](#kvs-ddl-index-management-and-field-evolution)
+→ For the SQL comparison argument see [SQL Translation Layer vs KV Pipeline](#sql-translation-layer-vs-kv-pipeline-chain-a-decisive-advantage-under-predictable-query-patterns) and [KV's DDL](#kvs-ddl-index-management-and-field-evolution); for the abstraction-versus-performance trade-off see [Prefix Scan vs SQL](#prefix-scan-vs-sql-the-promise-and-its-price), whose opposite (index order as a leak) is argued in the [MySQL Critique](mysql-critique-en.md), "Index Rigidity".
 
 [Consensus Protocol](consensus-protocol-en.md) details **the essence and limits of Raft as a metadata consensus protocol**: why Raft suits etcd/K8s's MB-scale metadata but not GB-scale data storage (the physical reality of 3x write amplification).
