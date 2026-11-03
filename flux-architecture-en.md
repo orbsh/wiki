@@ -72,6 +72,31 @@ Real systems are usually hybrid: what can be made static goes through index.json
 
 The key criterion: **data change frequency × number of clients**. High frequency × many clients = WS push; low frequency × many clients = CDN static; high frequency × single client = in-process cache; low frequency × single client = direct read, no cache needed.
 
+## Business Shape: WS as the Core Channel or an Auxiliary
+
+The same WS channel sits in a completely different place in two kinds of business, and that decides what the framework has to look like: where authentication goes, what counts as a route, and what a connection carries.
+
+**WS as an auxiliary.** Pages and endpoints still speak request-response; WS only carries pushes -- notifications, collaborative cursors, message alerts. Identity is established on the HTTP side (a login form, a cookie session), and the WS upgrade presents that already-authenticated session. Consequences: authentication happens during or before the handshake, the channel is not itself a business entry point, writes go over HTTP while pushes only change how the interface reads, and a reconnect costs nothing but the freshness of a push.
+
+**WS as the core** (Flux, Fluxora). There is no request-response: every interaction is a message on the connection. Three consequences follow:
+
+- There is no authenticated session to borrow at connect time. The connection is always established first (anonymously) and identity can only arrive later, by message -- signing in is a business frame, not part of the handshake. **This works because WS is a stateful, persistent connection**: one authentication is enough, and every frame after it runs on a link that has already been proven. HTTP is stateless, so every request authenticates on its own -- a cookie does not "store the login state"; it makes the browser re-present the same credential each time, and the server looks it up or verifies it per request, which is still per-request authentication. That is also why the core shape needs no credential in the handshake URL: after the handshake, the connection itself is that state.
+- Authentication is not a gate at the entrance but a state on the connection object. The framework maintains every connection (activity clock, heartbeat, removal); the business hangs its current identity on that connection (login state, user name), and permission is judged while handling a frame, not while accepting a socket.
+- A hostile connection is not the business layer's problem. TLS, rate limits, IP reputation and a WAF live in the gateway and at the edge; the framework answers two questions only: is this connection still alive, and what identity sits on it.
+
+**The test**: is request-response still the only way into the business? If yes, WS is auxiliary; if no, WS is the core.
+
+| Dimension | WS auxiliary | WS core |
+|:--|:--|:--|
+| When identity is established | Before the handshake (HTTP login) | After connecting (one message) |
+| Where authentication sits | The handshake (cookie / session) | State on the connection object, judged per frame |
+| Business entry point | HTTP routes; WS only pushes | The connection itself |
+| Write channel | HTTP | Messages on the connection |
+| Effect of a disconnect | Loses push freshness | Connection state and identity are rebuilt together |
+| What the framework maintains | Stateless requests plus push subscriptions | Each connection's lifecycle and identity |
+
+**Do not mix the two.** Authenticating in the handshake of a WS-core system means leaving a request-response shape inside an event channel: a browser WebSocket cannot carry an Authorization header, which leaves cookies and the URL -- cookies require an HTTP session first (exactly what the core shape avoids), and the URL writes the credential into the address bar, history and logs. The correct shape for a core system is "connect first, sign in after": the business draws its own login form (it is a downlink message like any other), the credential comes up in one frame, verification happens in the handler (it may call an external service), and the result is hung back on the connection object.
+
 ## Stream Computing and Message Queues: From Auxiliary to Core
 
 In traditional architecture, stream computing (Flink/RisingWave) and message queues (Kafka/NATS) are optional auxiliary components—used for real-time data warehousing or asynchronous tasks. In Flux architecture they become **core infrastructure**:
