@@ -93,6 +93,7 @@
 | [Go, Zig 与反智主义](go-zig-anti-intellectualism.md) | [Go, Zig and Anti-Intellectualism](go-zig-anti-intellectualism-en.md) | Go, Zig 与反智主义 |
 | [嵌入式脚本语言](embedded-script-languages.md) | [Embedded Script Language Selection](embedded-script-languages-en.md) | 嵌入式脚本语言选型 |
 | [Lambda 到硅](lambda-to-silicon.md) | [Lambda to Silicon](lambda-to-silicon-en.md) | 从 Lambda 演算到硅片的计算模型演进 |
+| [内存布局与分配模型](memory-layout-and-allocation.md) | | 水平地址空间与增长方向、栈减法寻址与栈平衡算术、堆加法寻址与碎片、字节序、五种内存模型（Rust / GC / Zig / Odin / Goose）的筹码交换 |
 | [自动机、状态机与 reducer](automaton-vs-state-machine.md) | [Automaton vs State Machine](automaton-vs-state-machine-en.md) | 术语的两种语域：形式语域（自动机 = 状态机）与工程语域（单实体受限操作）、RSM 定位 |
 | [序列化协议分析对比](serialization-protocol-comparison.md) | [Serialization Protocol Comparison](serialization-protocol-comparison-en.md) | 序列化格式选型 |
 | [文档格式对比](document-format-comparison.md) | | Markdown 与下一代纯文本标记语言：按笔记/排版/出版用途分轴对比 Neorg、Org-mode、Typst、AsciiDoc |
