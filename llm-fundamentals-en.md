@@ -127,6 +127,16 @@ The compression scenario is a special case: once the tool call triggered by the 
 
 → For details, see [Tail Prompt Optimization](tail-prompt-optimization-en.md)
 
+### 1.7 Positional Weight and Reader Identity: Why a Document Must Hold the Terminal State
+
+Attention does not distribute weight evenly across tokens. A token at the start takes part in every subsequent attention computation and is revisited repeatedly, so it shapes the model's framing of the whole document; a token near the end is seen by only a few later tokens. In long-context evaluations the middle is recalled worst — both the beginning and the end are picked up, while what sits in between is easily skipped.
+
+Long documents are also rarely read through in one pass. The common paths are truncation into a head-and-tail window, segmented reading, or summarizing before the text enters the context; any passage that falls into such a gap is lost, and content appended at the end is no exception. Under a "read top-down, stop when there is enough" behavior it is sacrificed first.
+
+More fundamental is the statelessness of §1.2. Append-only updates assume the reader knows that "the latest is at the end"; that knowledge comes from continuous presence — human team members see the increment every day, know which passage has been superseded, and know to look at the tail. An LLM has no cross-session memory: the record of the discussion in which the document was written is not in its context, so reading the document puts it in the position of an outsider making first contact. It does not know which passage is obsolete and is carried along by whatever framing it read first.
+
+Documents written for LLMs therefore take the shape of a **publication**: the body is the terminal state, and the history of evolution is added after the body. A human team in close collaboration can exchange information quickly by appending at the tail, but the resulting artifact must be rewritten into its terminal state; every read by an LLM is such a "fresh contact", without the experience of having been present in between. The test in one sentence: can someone who knows nothing about the discussion, reading from the first paragraph, arrive at the currently correct conclusion?
+
 ---
 
 ## 2. What LLM Is Not
