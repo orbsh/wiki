@@ -90,9 +90,8 @@
 | [编程语言选型](language-selection.md) | [Programming Language Selection](language-selection-en.md) | 人类侧：认知负荷、四象限领地、生态与工具链、被淘汰语言 |
 | [原型/快速开发迷思](prototype-myth.md) | [The Prototype / Rapid-Development Myth](prototype-myth-en.md) | 「先用 Python 验证再重写」的前提为何不成立：类型是契约，AI 改变类型成本 |
 | [ECS 实体组件系统](entity-component-system.md) | [Entity-Component-System (ECS)](entity-component-system-en.md) | ECS 三层模型、数据驱动收益、网/树拓扑定位、Bevy 0.19 实践 |
-| [开放世界 ARPG 技术架构](open-world-arpg-architecture.md) | | 《星尘》项目：四条开放轴（空间/地形/数据/社会）如何压出存储需求、群岛与连通的世界拓扑（大陆即连通分量，含被否的板块与虫洞）、近程射击候选玩法、连通分量与合服、链只做资产登记、与单局竞技场（Blender 地形加动态建造）的路线对照 |
-| [战斗设计框架](combat-design-framework.md) | | 武器形态三轴与命中率平方反比、帧经济学（前后摇/取消窗口/僵直/输入缓冲）、平衡三层工具、可组合性三层与信息层 |
-| [开放世界玩法设计](open-world-gameplay-design.md) | | 《星尘》项目：岛作为玩法原子与一人多岛、浅水/桥/填海三档连接、连接维护是税、海上与怪物岛、按贡献分权限、柱状岛与结构件建造 |
+| [开放世界 ARPG：《星尘》架构与玩法](open-world-arpg-design.md) | | 《星尘》项目：四条开放轴与群岛拓扑、岛作为玩法原子与浅水/桥/填海、星尘经济与贸易、连通分量与合服、链只做资产登记、近程射击候选玩法、OKM 数据层 |
+| [游戏设计逻辑](game-design-logic.md) | | 武器形态三轴与命中率平方反比、地形与战术判据、通路与聚落形态、帧经济学、平衡三层工具、可组合性分层 |
 | [Go, Zig 与反智主义](go-zig-anti-intellectualism.md) | [Go, Zig and Anti-Intellectualism](go-zig-anti-intellectualism-en.md) | Go, Zig 与反智主义 |
 | [嵌入式脚本语言](embedded-script-languages.md) | [Embedded Script Language Selection](embedded-script-languages-en.md) | 嵌入式脚本语言选型 |
 | [Lambda 到硅](lambda-to-silicon.md) | [Lambda to Silicon](lambda-to-silicon-en.md) | 从 Lambda 演算到硅片的计算模型演进 |
