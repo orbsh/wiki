@@ -90,6 +90,9 @@
 | [编程语言选型](language-selection.md) | [Programming Language Selection](language-selection-en.md) | 人类侧：认知负荷、四象限领地、生态与工具链、被淘汰语言 |
 | [原型/快速开发迷思](prototype-myth.md) | [The Prototype / Rapid-Development Myth](prototype-myth-en.md) | 「先用 Python 验证再重写」的前提为何不成立：类型是契约，AI 改变类型成本 |
 | [ECS 实体组件系统](entity-component-system.md) | [Entity-Component-System (ECS)](entity-component-system-en.md) | ECS 三层模型、数据驱动收益、网/树拓扑定位、Bevy 0.19 实践 |
+| [开放世界 ARPG 技术架构](open-world-arpg-architecture.md) | | 《星尘》项目：四条开放轴（空间/地形/数据/社会）如何压出存储需求、岛与海的世界拓扑、近程射击候选玩法、体素块落点、联邦与自建服运营 |
+| [战斗设计框架](combat-design-framework.md) | | 武器形态三轴与命中率平方反比、帧经济学（前后摇/取消窗口/僵直/输入缓冲）、平衡三层工具、可组合性三层与信息层 |
+| [开放世界玩法设计](open-world-gameplay-design.md) | | 《星尘》项目：众筹建岛与产权三层、浮空维持与漂移、上下两层的方差平衡、星尘的双份开销与灾后拾荒、地貌禀赋与专业化 |
 | [Go, Zig 与反智主义](go-zig-anti-intellectualism.md) | [Go, Zig and Anti-Intellectualism](go-zig-anti-intellectualism-en.md) | Go, Zig 与反智主义 |
 | [嵌入式脚本语言](embedded-script-languages.md) | [Embedded Script Language Selection](embedded-script-languages-en.md) | 嵌入式脚本语言选型 |
 | [Lambda 到硅](lambda-to-silicon.md) | [Lambda to Silicon](lambda-to-silicon-en.md) | 从 Lambda 演算到硅片的计算模型演进 |
