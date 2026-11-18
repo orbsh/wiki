@@ -3,13 +3,13 @@
 > **Languages:** [English](nginx-critique-en.md) (primary) · [中文](nginx-critique.md)
 
 **Conclusion**: Obsolete in modern architectures.  
-**Status**: Mediocre performance, primitive configuration, design assumptions no longer hold.
+**Status**: Mediocre performance, primitive configuration (not one default fits a modern deployment), design assumptions no longer hold.
 
 ## Executive Summary
 
 Nginx is often praised as "high-performance," but this is a **myth from 2004**. In modern cloud-native environments, compared with alternatives such as Envoy or Pingora, Nginx's performance is **mediocre**. Worse still, Nginx's configuration model is **primitive** — static files, a non-standard format, no API-driven management — making it incompatible with modern orchestration systems.
 
-**Core insight**: Nginx's design assumptions (saving every KB of memory, minimizing connections, manual tuning) were reasonable in an era when servers had only 512MB RAM and handled 10,000 requests/second. Today, a single JavaScript bundle exceeds 1MB, servers have 128GB RAM, and we handle millions of requests/second. Nginx's "optimizations" are **solutions to problems that no longer exist**.
+**Core insight**: Nginx's design assumptions (saving every KB of memory, minimizing connections, manual tuning) were reasonable in an era when servers had only 512MB RAM and handled 10,000 requests/second. Today, a single JavaScript bundle exceeds 1MB, servers have 128GB RAM, and we handle millions of requests/second. Nginx's "optimizations" are **solutions to problems that no longer exist**; even its default configuration belongs to that era — every item has to be looked up and overridden explicitly.
 
 ## The Black Marks
 
@@ -104,7 +104,7 @@ Yes, Envoy is more verbose. But it is standard YAML — parseable by any tool, p
 
 #### 3.2 Resource Tuning: Scrimping KBs in a GB World
 
-Nginx's configuration is so granular that every buffer and timeout has to be set manually. This is a relic of the 90s, when memory was counted in MB and 1G RAM was considered enormous:
+Nginx's configuration is so granular that every buffer and timeout has to be set manually, and almost none of the defaults is usable as-is. This is a relic of the 90s, when memory was counted in MB and 1G RAM was considered enormous:
 
 ```nginx
 # Memory tuning: saving a few KB per connection — does it matter?
@@ -130,7 +130,22 @@ location /ws {
 }
 ```
 
-**The heart of the problem**: modern servers have 128GB RAM, and a single JavaScript bundle exceeds 1MB. The 16KB buffer that Nginx spends effort optimizing is less than even a fraction of a single request body. These configuration items were reasonable in 2004 — when servers had only 512MB RAM. In 2026, they are **noise**.
+**Defaults: none of them fit a modern deployment.** Worse still, these defaults are not a "conservative but usable" fallback; they freeze 90s constraints verbatim into the configuration core — memory accounted for in KB, per-host connection counts planned in the hundreds, links that were slow and expensive:
+
+| Directive | Default | Consequence in a modern deployment |
+|-----------|---------|-----------------------------------|
+| `client_max_body_size` | 1m | 413 on the first photo upload; request bodies of tens of MB are routine today |
+| `client_body_buffer_size` | 8k/16k | the body spills straight to a temporary file on disk |
+| `client_header_buffer_size` | 1k | headers carrying a JWT and a pile of cookies already overflow; you get a 400 and go read the docs |
+| `large_client_header_buffers` | 4 8k | same, capped at 32KB in total |
+| `keepalive_timeout` | 75s | unrelated to how browsers, mobile clients, or CDN origins actually behave; you guess |
+| `worker_connections` | 512 | a single worker carries tens of thousands of connections in 2026 |
+| `proxy_buffering` / `proxy_buffers` | on, 8×4k/8k | any moderately large response goes to a temp file by default — disk I/O traded for memory |
+| `sendfile` | off | static files are off the zero-copy path by default |
+
+Scrimping on these details was sound engineering in that context: on a 512MB machine, a 1KB header buffer multiplied by ten thousand connections is a real number. Today memory is counted in GB, request bodies in MB or tens of MB, and connections in tens of thousands, so the per-item gain is diluted below the cost of maintaining the configuration. The practical effect is not better performance but a requirement that every deployment first copy a "tuned nginx.conf" — and the copied values are inherited verbatim by the next person, with nobody checking whether they still correspond to any real constraint.
+
+**The heart of the problem**: modern servers have 128GB RAM, a single JavaScript bundle exceeds 1MB, and a request body of tens of MB has long been routine. The 16KB buffer that Nginx spends effort optimizing is less than even a fraction of a single request body. These configuration items were reasonable in the 90s and in 2004 — when servers had only 512MB RAM and connections were counted in thousands. In 2026, they are **noise**.
 
 Different applications need different timeouts (API 30s, WebSocket 3600s, file upload 600s), and Nginx requires configuring this manually for every location; one wrong timeout = dropped connections or resource exhaustion. Event-driven asynchronous I/O (epoll/kqueue) is inherently good at handling slow connections — an idle fd does not block the event loop, and the connection count is not a bottleneck. The real problem with Nginx timeout tuning is not resource exhaustion, but **configuration complexity**: each location must be set separately, each application tuned one by one, making operational costs high. Envoy/Pingora's approach is **lenient defaults + declarative overrides**: the default timeouts are lenient enough, and when precise control is needed, it is configured per route/cluster through the control plane, without manually changing each location.
 
